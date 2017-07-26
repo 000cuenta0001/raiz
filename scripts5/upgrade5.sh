@@ -1,7 +1,7 @@
 #!/bin/bash
 
 now=$(date +'%d/%m/%Y %R')
-echo ${now} Inicia el proceso. > /storage/scripts/upgrade.log
+echo ${now} Inicia el proceso. > /storage/scripts5/upgrade.log
 
 FILE_DIR="/storage/scripts5"
 URL="https://codeload.github.com/000cuenta0001/carpetaconcreta/zip/master" 
