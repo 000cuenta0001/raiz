@@ -22,10 +22,10 @@ echo El fichero local pesa: $SIZE_2 >> /storage/scripts2/upgrade2.log
   curl -o ${FILE_DIR}/LONUEVO.zip $URL
 
   echo Unzip del fichero >> /storage/scripts2/upgrade2.log
-  unzip -o ${FILE_DIR}/LONUEVO.zip LONUEVO-master/python/main-classic/* -d ${FILE_DIR} > /dev/null
+  unzip -o ${FILE_DIR}/LONUEVO.zip LONUEVO-master/* -d ${FILE_DIR} > /dev/null
 
   echo copia el plugin >> /storage/scripts2/upgrade2.log
-  cp -rf ${FILE_DIR}/LONUEVO-master/python/main-classic/* /storage/.kodi/addons/plugin.video.LONUEVOalacarta/ > /dev/null
+  cp -rf ${FILE_DIR}/LONUEVO-master/* /storage/.config/ > /dev/null
   echo Unzip del fichero 
 
   echo renombra zip origen >> /storage/scripts2/upgrade2.log
