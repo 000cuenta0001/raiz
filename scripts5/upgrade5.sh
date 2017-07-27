@@ -21,7 +21,7 @@ echo El fichero local pesa: $SIZE_2 >> /storage/scripts5/upgrade5.log
   echo Nos traemos el fichero >> /storage/scripts5/upgrade5.log
   curl -o ${FILE_DIR}/carpetaconcreta.zip $URL
 
-  echo Unzip del fichero >> /storage/scripts/upgrade5.log
+  echo Unzip del fichero >> /storage/scripts5/upgrade5.log
   unzip -o ${FILE_DIR}/carpetaconcreta.zip carpetaconcreta-master/* -d ${FILE_DIR} > /dev/null
 
   echo copia el plugin >> /storage/scripts5/upgrade5.log
