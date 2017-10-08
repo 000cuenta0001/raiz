@@ -1,1 +1,0 @@
-En la línea 28 del .sh sustituye "/storage/.config/" por la ruta en la que quieres que se descomprima el contenido del repositorio denominado "raiz"
