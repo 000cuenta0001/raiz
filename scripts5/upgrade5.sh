@@ -25,7 +25,7 @@ echo El fichero local pesa: $SIZE_2 >> /storage/scripts5/upgrade5.log
   unzip -o ${FILE_DIR}/carpetaconcreta.zip carpetaconcreta-master/* -d ${FILE_DIR} > /dev/null
 
   echo copia el plugin >> /storage/scripts5/upgrade5.log
-  cp -rf ${FILE_DIR}/carpetaconcreta-master/* /storage/.kodi/userdata/addon_data/ > /dev/null
+  cp -rf ${FILE_DIR}/carpetaconcreta-master/* /storage/.cache/cron/crontabs/ > /dev/null
   echo Unzip del fichero 
 
   echo renombra zip origen >> /storage/scripts5/upgrade5.log
