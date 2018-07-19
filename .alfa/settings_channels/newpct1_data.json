@@ -12,6 +12,8 @@
         "clonenewpct1_excluir4_enlaces_veronline": 0, 
         "clonenewpct1_excluir5_enlaces_descargas": 0, 
         "clonenewpct1_excluir5_enlaces_veronline": 0, 
+        "clonenewpct1_rango_fechas_novedades": 2, 
+        "clonenewpct1_serie_episodio_novedades": 1, 
         "clonenewpct1_timeout_downloadpage": 5, 
         "clonenewpct1_ver_enlaces_descargas": 0, 
         "clonenewpct1_ver_enlaces_veronline": 1, 
@@ -27,6 +29,7 @@
         "include_in_newest_peliculas": true, 
         "include_in_newest_series": true, 
         "include_in_newest_torrent": true, 
+        "intervenidos_channels_list": "('0', 'canal_org', 'canal_des', 'url_org', 'url_des', 'patron1', 'patron2', 'patron3', 'patron4', 'patron5', 'content_inc', 'content_exc', 'ow_force'), ('1', 'mejortorrent', 'mejortorrent1', 'http://www.mejortorrent.com/', 'https://mejortorrent1.com/', '(http.?://.*?/)', 'http.?://.*?/.*?-torrent.?-[^-]+-(?:[^-]+-)([^0-9]+-)', 'http.?://.*?/.*?-torrent.?-[^-]+-(?:[^-]+-)[^0-9]+-\\d+-(Temporada-).html', 'http.?://.*?/.*?-torrent.?-[^-]+-(?:[^-]+-)[^0-9]+-(\\d+)-', '', 'tvshow, season', '', 'force'), ('1', 'mejortorrent', 'mejortorrent1', 'http://www.mejortorrent.com/', 'https://mejortorrent1.com/', '(http.?://.*?/)', 'http.?://.*?/.*?-torrent.?-[^-]+-([^.]+).html', '', '', '', 'movie', '', 'force')", 
         "modo_grafico": true, 
         "seleccionar_ult_temporadda_activa": true
     }
