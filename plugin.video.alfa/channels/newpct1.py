@@ -61,6 +61,11 @@ elif fecha_rango == 3: fecha_rango = 'Mes'
 elif fecha_rango == 4: fecha_rango = 'Siempre'
 episodio_serie = config.get_setting('clonenewpct1_serie_episodio_novedades', channel_py)    #Episodio o serie para Novedades
 
+#Temporal, sólo para actualizar newpct1_data.json con otro valor por defecto
+channel_banned = config.get_setting('clonenewpct1_excluir1_enlaces_veronline', channel_py)  #1er Canal baneado
+if channel_banned == 9:
+    config.set_setting('clonenewpct1_excluir1_enlaces_veronline', 22, channel_py)           #se pone el nuevo valor por defecto
+
 
 def mainlist(item):
     logger.info()
@@ -129,6 +134,13 @@ def submenu(item):
     patron = '<li><a\s?class="[^"]+"\s?href="http:[^"]+"><i\s?class=.*><\/i>.*Inicio<\/a><\/li>(.+)<\/ul>\s?<\/nav>'
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not data or not scrapertools.find_single_match(data, patron):
+        item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
+        if item.intervencion:                                                   #Sí ha sido clausurada judicialmente
+            for clone_inter, autoridad in item.intervencion:
+                thumb_intervenido = get_thumb(autoridad)
+                itemlist.append(item.clone(action='', title="[COLOR yellow]" + clone_inter.capitalize() + ': [/COLOR]' + intervenido_judicial + '. Reportar el problema en el foro', thumbnail=thumb_intervenido))
+            return itemlist                                                     #Salimos
+        
         logger.error("ERROR 01: SUBMENU: La Web no responde o ha cambiado de URL: " + item.url + data)
         #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el submenú
         item, data = generictools.fail_over_newpct1(item, patron)
@@ -206,6 +218,13 @@ def submenu_novedades(item):
     patron = '<div class="content">.*?<ul class="noticias'
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not data or not scrapertools.find_single_match(data, patron):
+        item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
+        if item.intervencion:                                                   #Sí ha sido clausurada judicialmente
+            for clone_inter, autoridad in item.intervencion:
+                thumb_intervenido = get_thumb(autoridad)
+                itemlist.append(item.clone(action='', title="[COLOR yellow]" + clone_inter.capitalize() + ': [/COLOR]' + intervenido_judicial + '. Reportar el problema en el foro', thumbnail=thumb_intervenido))
+            return itemlist                                                     #Salimos
+        
         logger.error("ERROR 01: SUBMENU: La Web no responde o ha cambiado de URL: " + item.url + data)
         #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el submenú
         item, data = generictools.fail_over_newpct1(item, patron)
@@ -274,6 +293,13 @@ def alfabeto(item):
 
     patron = '<ul class="alfabeto">(.*?)</ul>'
     if not data or not scrapertools.find_single_match(data, patron):
+        item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
+        if item.intervencion:                                                   #Sí ha sido clausurada judicialmente
+            for clone_inter, autoridad in item.intervencion:
+                thumb_intervenido = get_thumb(autoridad)
+                itemlist.append(item.clone(action='', title="[COLOR yellow]" + clone_inter.capitalize() + ': [/COLOR]' + intervenido_judicial + '. Reportar el problema en el foro', thumbnail=thumb_intervenido))
+            return itemlist                                                     #Salimos
+        
         logger.error("ERROR 01: ALFABETO: La Web no responde o ha cambiado de URL: " + item.url + data)
         #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el submenú
         item, data = generictools.fail_over_newpct1(item, patron)
@@ -325,6 +351,11 @@ def listado(item):
     
     patron = '<ul class="' + clase + '">(.*?)</ul>'     #seleccionamos el bloque que nos interesa
     if not data or (not scrapertools.find_single_match(data, patron) and not '<h3><strong>( 0 ) Resultados encontrados </strong>' in data):
+        item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
+        if item.intervencion:                                                   #Sí ha sido clausurada judicialmente
+            item, itemlist = generictools.post_tmdb_listado(item, itemlist)     #Llamamos al método para el pintado del error
+            return itemlist                                                     #Salimos
+            
         logger.error("ERROR 01: LISTADO: La Web no responde o ha cambiado de URL: " + item.url + " / DATA: " + data)
         #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el submenú
         item, data = generictools.fail_over_newpct1(item, patron)
@@ -342,6 +373,7 @@ def listado(item):
     elif item.extra == "series" and not "/miniseries" in item.url:
         item.action = "episodios"
         item.contentType = "tvshow"
+        item.season_colapse = True
         pag = True
     elif item.extra == "varios" or "/miniseries" in item.url:
         item.action = "findvideos"
@@ -445,7 +477,9 @@ def listado(item):
         
         # Limpiamos títulos, Sacamos datos de calidad, audio y lenguaje
         title = re.sub('\r\n', '', scrapedtitle).decode('iso-8859-1').encode('utf8').strip()
+        #title = re.sub('\r\n', '', scrapedtitle).decode('utf-8').encode('utf-8').strip()
         title_alt = re.sub('\r\n', '', scrapedtitle_alt).decode('iso-8859-1').encode('utf8').strip()
+        #title_alt = re.sub('\r\n', '', scrapedtitle_alt).decode('utf-8').encode('utf-8').strip()
         title = title.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ü", "u").replace("ï¿½", "ñ").replace("Ã±", "ñ").replace(".", " ")
         title_alt = title_alt.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ü", "u").replace("ï¿½", "ñ").replace("Ã±", "ñ")
         
@@ -454,7 +488,7 @@ def listado(item):
         
         #Determinamos y marcamos idiomas distintos del castellano
         item_local.language = []
-        if "[vos" in title.lower()  or "v.o.s" in title.lower() or "vo" in title.lower() or ".com/pelicula/" in scrapedurl  or ".com/series-vo" in scrapedurl or "-vo/" in scrapedurl or "vos" in calidad.lower() or "vose" in calidad.lower() or "v.o.s" in calidad.lower() or "sub" in calidad.lower() or ".com/peliculas-vo" in item.url:
+        if "[vos" in title.lower() or "v.o.s" in title.lower() or "vo" in title.lower() or "subs" in title.lower() or ".com/pelicula/" in scrapedurl  or ".com/series-vo" in scrapedurl or "-vo/" in scrapedurl or "vos" in calidad.lower() or "vose" in calidad.lower() or "v.o.s" in calidad.lower() or "sub" in calidad.lower() or ".com/peliculas-vo" in item.url:
             item_local.language += ["VOS"]
         title = title.replace(" [Subs. integrados]", "").replace(" [subs. Integrados]", "").replace(" [VOSE", "").replace(" [VOS", "").replace(" (V.O.S.E)", "").replace(" VO", "").replace("Subtitulos", "")
         if "latino" in title.lower() or "argentina" in title.lower() or "-latino/" in scrapedurl or "latino" in calidad.lower() or "argentina" in calidad.lower():
@@ -526,9 +560,9 @@ def listado(item):
         title = re.sub(r' \d+x\d+', '', title)
         title = re.sub(r' x\d+', '', title)
         
-        title = title.replace("Ver online ", "").replace("Descarga Serie HD ", "").replace("Descargar Serie HD ", "").replace("Descarga Serie ", "").replace("Descargar Serie ", "").replace("Ver en linea ", "").replace("Ver en linea", "").replace("HD ", "").replace("(Proper)", "").replace("RatDVD", "").replace("DVDRiP", "").replace("DVDRIP", "").replace("DVDRip", "").replace("DVDR", "").replace("DVD9", "").replace("DVD", "").replace("DVBRIP", "").replace("DVB", "").replace("LINE", "").replace("- ES ", "").replace("ES ", "").replace("COMPLETA", "").replace("(", "-").replace(")", "-").replace(".", " ").strip()
+        title = title.replace("Ver online ", "").replace("Descarga Serie HD ", "").replace("Descargar Serie HD ", "").replace("Descarga Serie ", "").replace("Descargar Serie ", "").replace("Ver en linea ", "").replace("Ver en linea", "").replace("en Full HD", "").replace("en hd ", "").replace("en HD ", "").replace("HD ", "").replace("(Proper)", "").replace("RatDVD", "").replace("DVDRiP", "").replace("DVDRIP", "").replace("DVDRip", "").replace("DVDR", "").replace("DVD9", "").replace("DVD", "").replace("DVBRIP", "").replace("DVB", "").replace("LINE", "").replace("calidad", " ").replace("- ES ", "").replace("ES ", "").replace("COMPLETA", "").replace("(", "-").replace(")", "-").replace(".", " ").strip()
         
-        title = title.replace("Descargar torrent ", "").replace("Descarga Gratis ", "").replace("Descargar Estreno ", "").replace("Descargar Estrenos ", "").replace("Pelicula en latino ", "").replace("Descargar Pelicula ", "").replace("Descargar Peliculas ", "").replace("Descargar peliculas ", "").replace("Descargar Todas ", "").replace("Descargar Otras ", "").replace("Descargar ", "").replace("Descarga ", "").replace("Bajar ", "").replace("HDRIP ", "").replace("HDRiP ", "").replace("HDRip ", "").replace("RIP ", "").replace("Rip", "").replace("RiP", "").replace("XviD", "").replace("AC3 5.1", "").replace("AC3", "").replace("1080p ", "").replace("720p ", "").replace("DVD-Screener ", "").replace("TS-Screener ", "").replace("Screener ", "").replace("BdRemux ", "").replace("BR ", "").replace("4KULTRA", "").replace("FULLBluRay", "").replace("FullBluRay", "").replace("BluRay", "").replace("Bonus Disc", "").replace("de Cine ", "").replace("TeleCine ", "").replace("latino", "").replace("Latino", "").replace("argentina", "").replace("Argentina", "").strip()
+        title = title.replace("Descargar torrent ", "").replace("Descarga Gratis", "").replace("Descarga gratis", "").replace("Descargar Gratis", "").replace("Descargar gratis", "").replace("en gratis", "").replace("gratis gratis", "").replace("Gratisgratis", "").replace("Descargar Estreno ", "").replace("Descargar Estrenos ", "").replace("Pelicula en latino ", "").replace("Descargar Pelicula ", "").replace("Descargar pelicula ", "").replace("Descargar Peliculas ", "").replace("Descargar peliculas ", "").replace("Descargar Todas ", "").replace("Descargar Otras ", "").replace("Descargar ", "").replace("Descarga ", "").replace("Descargar ", "").replace("Decargar ", "").replace("Bajar ", "").replace("HDRIP ", "").replace("HDRiP ", "").replace("HDRip ", "").replace("RIP ", "").replace("Rip", "").replace("RiP", "").replace("XviD", "").replace("AC3 5.1", "").replace("AC3", "").replace("1080p ", "").replace("720p ", "").replace("DVD-Screener ", "").replace("TS-Screener ", "").replace("Screener ", "").replace("BdRemux ", "").replace("BR ", "").replace("4KULTRA", "").replace("FULLBluRay", "").replace("FullBluRay", "").replace("en BluRay", "").replace("BluRay en", "").replace("Bluray en", "").replace("BluRay", "").replace("Bonus Disc", "").replace("de Cine ", "").replace("TeleCine ", "").replace("latino", "").replace("Latino", "").replace("argentina", "").replace("Argentina", "").replace("++Sub", "").replace("+-+Sub", "").strip()
         
         if title.endswith("torrent gratis"): title = title[:-15]
         if title.endswith("gratis"): title = title[:-7]
@@ -555,6 +589,7 @@ def listado(item):
         #Limpieza final del título y guardado en las variables según su tipo de contenido
         title = scrapertools.remove_htmltags(title)
         item_local.title = title
+        item_local.from_title = title                       #Guardamos esta etiqueta para posible desambiguación de título
         if item_local.contentType == "movie":
             item_local.contentTitle = title
         else:
@@ -578,6 +613,8 @@ def listado(item):
         
         #Agrega el item local a la lista itemlist
         itemlist.append(item_local.clone())
+        
+        #logger.debug(item_local)
 
     #Pasamos a TMDB la lista completa Itemlist
     tmdb.set_infoLabels(itemlist, __modo_grafico__)
@@ -645,6 +682,7 @@ def listado_busqueda(item):
     #Máximo num. de líneas permitidas por TMDB. Máx de 5 páginas por Itemlist para no degradar el rendimiento
     while cnt_title <= cnt_tot and cnt_next < 5:
 
+        data = ''
         try:
             data = re.sub(r"\n|\r|\t|\s{2,}", "", httptools.downloadpage(item.url, post=item.post, timeout=timeout_search).data)
         except:
@@ -656,6 +694,11 @@ def listado_busqueda(item):
         else:
             pattern = '<ul class="%s">(.*?)</ul>' % item.pattern                #seleccionamos el bloque que nos interesa
         if not data or (not scrapertools.find_single_match(data, pattern) and not '<h3><strong>( 0 ) Resultados encontrados </strong>' in data):
+            item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
+            if item.intervencion:                                                   #Sí ha sido clausurada judicialmente
+                item, itemlist = generictools.post_tmdb_listado(item, itemlist)     #Llamamos al método para el pintado del error
+                return itemlist                                                     #Salimos
+            
             logger.error("ERROR 01: LISTADO_BUSQUEDA: La Web no responde o ha cambiado de URL: " + item.url + item.post + " / DATA: " + data)
             #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el submenú
             item, data = generictools.fail_over_newpct1(item, pattern)
@@ -785,7 +828,7 @@ def listado_busqueda(item):
                 title_lista += [scrapedurl_alt]
             else:
                 title_lista += [scrapedurl]
-        if "juego/" in scrapedurl or "xbox" in scrapedurl.lower() or "xbox" in scrapedtitle.lower() or "windows" in scrapedtitle.lower() or "windows" in calidad.lower() or "nintendo" in scrapedtitle.lower() or "xbox" in calidad.lower() or "epub" in calidad.lower() or "pdf" in calidad.lower() or "pcdvd" in calidad.lower() or "crack" in calidad.lower():      # no mostramos lo que no sean videos
+        if ("juego/" in scrapedurl or "xbox" in scrapedurl.lower()) and not "/serie" in scrapedurl or "xbox" in scrapedtitle.lower() or "windows" in scrapedtitle.lower() or "windows" in calidad.lower() or "nintendo" in scrapedtitle.lower() or "xbox" in calidad.lower() or "epub" in calidad.lower() or "pdf" in calidad.lower() or "pcdvd" in calidad.lower() or "crack" in calidad.lower():      # no mostramos lo que no sean videos
             continue
         cnt_title += 1                  # Sería una línea real más para Itemlist
         
@@ -821,7 +864,7 @@ def listado_busqueda(item):
             item_local.url = url
             item_local.extra2 = 'serie_episodios'           #Creamos acción temporal excluyente para otros clones
             if item_local.category == 'Mispelisyseries':    #Esta web no gestiona bien el cambio de episodio a Serie
-                pattern = 'class="btn-torrent">.*?window.location.href = "(.*?)";'       #Patron para .torrent
+                pattern = 'class="btn-torrent">.*?window.location.href = "([^"]+)";'      #Patron para .torrent
                 #Como no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el cambio de episodio por serie
                 item_local, data_serie = generictools.fail_over_newpct1(item_local, pattern)
             else:
@@ -830,7 +873,7 @@ def listado_busqueda(item):
                 except:
                     pass
 
-                pattern = 'class="btn-torrent">.*?window.location.href = "(.*?)";'       #Patron para .torrent
+                pattern = 'class="btn-torrent">.*?window.location.href = "([^"]+)";'       #Patron para .torrent
                 if not data_serie or (not scrapertools.find_single_match(data_serie, pattern) and not '<h3><strong>( 0 ) Resultados encontrados </strong>' in data and not '<ul class="noticias-series"></ul></form></div><!-- end .page-box -->' in data):
                     logger.error("ERROR 01: LISTADO_BUSQUEDA: La Web no responde o ha cambiado de URL: " + item_local.url + " / DATA: " + data_serie)
                     #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el cambio de episodio por serie
@@ -850,7 +893,7 @@ def listado_busqueda(item):
                     item_local.url = item_local.url.replace('/series/', '/series-vo/')
                 #item_local.url = re.sub(r'\/\d+$', '/', item_local.url)             #Quitamos el ID de la serie por compatib.
                 if item_local.url:
-                    title_subs += ["Episodio %sx%s" % (scrapertools.find_single_match(url, '\/temp.*?-(\d+)\/cap.*?-(\d+)\/'))]
+                    title_subs += ["Episodio %sx%s" % (scrapertools.find_single_match(url, '\/temp.*?-(\d+)-?\/cap.*?-(\d+(?:-al-\d+)?)-?\/'))]
                     url = item_local.url
             except:
                 pass
@@ -858,8 +901,8 @@ def listado_busqueda(item):
         if item.extra == "novedades" and "/serie" in url:
             if not item_local.url or episodio_serie == 0:
                 item_local.url = url
-                if scrapertools.find_single_match(url, '\/temp.*?-(\d+)\/cap.*?-(\d+)\/'):
-                    title_subs += ["Episodio %sx%s" % (scrapertools.find_single_match(url, '\/temp.*?-(\d+)\/cap.*?-(\d+)\/'))]
+                if scrapertools.find_single_match(url, '\/temp.*?-(\d+)-?\/cap.*?-(\d+(?:-al-\d+)?)-?\/'):
+                    title_subs += ["Episodio %sx%s" % (scrapertools.find_single_match(url, '\/temp.*?-(\d+)-?\/cap.*?-(\d+(?:-al-\d+)?)-?\/'))]
                 else:
                     title_subs += ["Episodio 1x01"]
 
@@ -867,6 +910,7 @@ def listado_busqueda(item):
         if (".com/serie" in url or "/serie" in url or "-serie" in url) and not "/miniseries" in url and (not "/capitulo" in url or "pelisyseries.com" in item_local.channel_host):   #Series
             item_local.action = "episodios"
             item_local.contentType = "tvshow"
+            item_local.season_colapse = True
             item_local.extra = "series"
         elif "varios/" in url or "/miniseries" in url:                #Documentales y varios
             item_local.action = "findvideos"
@@ -883,13 +927,14 @@ def listado_busqueda(item):
         
         # Limpiamos títulos, Sacamos datos de calidad, audio y lenguaje
         title = re.sub('\r\n', '', scrapedtitle).decode('iso-8859-1').encode('utf8').strip()
+        #title = re.sub('\r\n', '', scrapedtitle).decode('utf-8').encode('utf-8').strip()
         title = title.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ü", "u").replace("ï¿½", "ñ").replace("Ã±", "ñ")
         
         item_local.quality = scrapertools.htmlclean(calidad)
 
         #Determinamos y marcamos idiomas distintos del castellano
         item_local.language = []
-        if "[vos" in title.lower()  or "v.o.s" in title.lower() or "vo" in title.lower() or ".com/pelicula/" in url  or ".com/series-vo" in url or "-vo/" in url or "vos" in calidad.lower() or "vose" in calidad.lower() or "v.o.s" in calidad.lower() or "sub" in calidad.lower() or ".com/peliculas-vo" in item.url:
+        if "[vos" in title.lower()  or "v.o.s" in title.lower() or "vo" in title.lower() or "subs" in title.lower() or ".com/pelicula/" in url  or ".com/series-vo" in url or "-vo/" in url or "vos" in calidad.lower() or "vose" in calidad.lower() or "v.o.s" in calidad.lower() or "sub" in calidad.lower() or ".com/peliculas-vo" in item.url:
             item_local.language += ["VOS"]
         title = title.replace(" [Subs. integrados]", "").replace(" [subs. Integrados]", "").replace(" [VOSE", "").replace(" [VOS", "").replace(" (V.O.S.E)", "").replace(" VO", "").replace("Subtitulos", "")
         if "latino" in title.lower() or "argentina" in title.lower() or "-latino/" in url or "latino" in calidad.lower() or "argentina" in calidad.lower():
@@ -920,6 +965,7 @@ def listado_busqueda(item):
             title = re.sub(r' - [t|T]emp\w+.*?\d+', '', title)
             title = re.sub(r' [t|T]emp.*?\d+[x|X]\d+', '', title)
             title = re.sub(r' [t|T]emp.*?\d+', '', title)
+            title = re.sub(r' [c|C]ap.*?\d+ al \d+', '', title)
             title = re.sub(r' [c|C]ap.*?\d+', '', title)
         if "audio" in title.lower():        #Reservamos info de audio para después de TMDB
             title_subs += ['[%s]' % scrapertools.find_single_match(title, r'(\[[a|A]udio.*?\])')]
@@ -949,7 +995,7 @@ def listado_busqueda(item):
             title_subs += ["[Miniserie]"]
 
         #Limpiamos restos en título
-        title = title.replace("Castellano", "").replace("castellano", "").replace("inglés", "").replace("ingles", "").replace("Inglés", "").replace("Ingles", "").replace("Ing", "").replace("Eng", "").replace("Calidad", "").replace("de la Serie", "")
+        title = title.replace("Castellano", "").replace("castellano", "").replace("inglés", "").replace("ingles", "").replace("Inglés", "").replace("Ingles", "").replace("Ingl", "").replace("Engl", "").replace("Calidad", "").replace("de la Serie", "")
         
         #Limpiamos cabeceras y colas del título
         title = re.sub(r'Descargar\s\w+\-\w+', '', title)
@@ -959,9 +1005,9 @@ def listado_busqueda(item):
         title = re.sub(r' \d+x\d+', '', title)
         title = re.sub(r' x\d+', '', title)
         
-        title = title.replace("Ver online ", "").replace("Descarga Serie HD ", "").replace("Descargar Serie HD ", "").replace("Descarga Serie ", "").replace("Descargar Serie ", "").replace("Ver en linea ", "").replace("Ver en linea", "").replace("HD ", "").replace("(Proper)", "").replace("RatDVD", "").replace("DVDRiP", "").replace("DVDRIP", "").replace("DVDRip", "").replace("DVDR", "").replace("DVD9", "").replace("DVD", "").replace("DVBRIP", "").replace("DVB", "").replace("LINE", "").replace("- ES ", "").replace("ES ", "").replace("COMPLETA", "").replace("(", "-").replace(")", "-").replace(".", " ").strip()
+        title = title.replace("Ver online ", "").replace("Descarga Serie HD ", "").replace("Descargar Serie HD ", "").replace("Descarga Serie ", "").replace("Descargar Serie ", "").replace("Ver en linea ", "").replace("Ver en linea", "").replace("en Full HD", "").replace("en hd ", "").replace("en HD ", "").replace("HD ", "").replace("(Proper)", "").replace("RatDVD", "").replace("DVDRiP", "").replace("DVDRIP", "").replace("DVDRip", "").replace("DVDR", "").replace("DVD9", "").replace("DVD", "").replace("DVBRIP", "").replace("DVB", "").replace("LINE", "").replace("calidad", " ").replace("- ES ", "").replace("ES ", "").replace("COMPLETA", "").replace("(", "-").replace(")", "-").replace(".", " ").strip()
         
-        title = title.replace("Descargar torrent ", "").replace("Descarga Gratis ", "").replace("Descargar Estreno ", "").replace("Descargar Estrenos ", "").replace("Pelicula en latino ", "").replace("Descargar Pelicula ", "").replace("Descargar Peliculas ", "").replace("Descargar peliculas ", "").replace("Descargar Todas ", "").replace("Descargar Otras ", "").replace("Descargar ", "").replace("Descarga ", "").replace("Bajar ", "").replace("HDRIP ", "").replace("HDRiP ", "").replace("HDRip ", "").replace("RIP ", "").replace("Rip", "").replace("RiP", "").replace("XviD", "").replace("AC3 5.1", "").replace("AC3", "").replace("1080p ", "").replace("720p ", "").replace("DVD-Screener ", "").replace("TS-Screener ", "").replace("Screener ", "").replace("BdRemux ", "").replace("BR ", "").replace("4KULTRA", "").replace("FULLBluRay", "").replace("FullBluRay", "").replace("BluRay", "").replace("Bonus Disc", "").replace("de Cine ", "").replace("TeleCine ", "").replace("latino", "").replace("Latino", "").replace("argentina", "").replace("Argentina", "").strip()
+        title = title.replace("Descargar torrent ", "").replace("Descarga Gratis", "").replace("Descarga gratis", "").replace("Descargar Gratis", "").replace("Descargar gratis", "").replace("en gratis", "").replace("gratis gratis", "").replace("Gratisgratis", "").replace("Descargar Estreno ", "").replace("Descargar Estrenos ", "").replace("Pelicula en latino ", "").replace("Descargar Pelicula ", "").replace("Descargar pelicula ", "").replace("Descargar Peliculas ", "").replace("Descargar peliculas ", "").replace("Descargar Todas ", "").replace("Descargar Otras ", "").replace("Descargar ", "").replace("Descarga ", "").replace("Descargar ", "").replace("Decargar ", "").replace("Bajar ", "").replace("HDRIP ", "").replace("HDRiP ", "").replace("HDRip ", "").replace("RIP ", "").replace("Rip", "").replace("RiP", "").replace("XviD", "").replace("AC3 5.1", "").replace("AC3", "").replace("1080p ", "").replace("720p ", "").replace("DVD-Screener ", "").replace("TS-Screener ", "").replace("Screener ", "").replace("BdRemux ", "").replace("BR ", "").replace("4KULTRA", "").replace("FULLBluRay", "").replace("FullBluRay", "").replace("en BluRay", "").replace("BluRay en", "").replace("Bluray en", "").replace("BluRay", "").replace("Bonus Disc", "").replace("de Cine ", "").replace("TeleCine ", "").replace("latino", "").replace("Latino", "").replace("argentina", "").replace("Argentina", "").replace("++Sub", "").replace("+-+Sub", "").strip()
         
         if "pelisyseries.com" in host and item_local.contentType == "tvshow":
             titulo = ''
@@ -1008,6 +1054,7 @@ def listado_busqueda(item):
         
         #Limpieza final del título y guardado en las variables según su tipo de contenido
         item_local.title = title
+        item_local.from_title = title                       #Guardamos esta etiqueta para posible desambiguación de título
         if item_local.contentType == "movie":
             item_local.contentTitle = title
             size = scrapedsize.replace(".", ",")
@@ -1089,8 +1136,8 @@ def listado_busqueda(item):
         #Agrega el item local a la lista itemlist
         itemlist.append(item_local.clone())
         
-    if not item.category_new:       #Si este campo no existe es que viene de la primera pasada de una búsqueda global
-        return itemlist             #Retornamos sin pasar por la fase de maquillaje para ahorra tiempo
+    #if not item.category_new:       #Si este campo no existe es que viene de la primera pasada de una búsqueda global
+    #    return itemlist             #Retornamos sin pasar por la fase de maquillaje para ahorra tiempo
 
     #Pasamos a TMDB la lista completa Itemlist
     tmdb.set_infoLabels(itemlist, __modo_grafico__)
@@ -1231,6 +1278,11 @@ def findvideos(item):
     patron = 'class="btn-torrent">.*?window.location.href = "(.*?)";'       #Patron para .torrent
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not data or not scrapertools.find_single_match(data, patron):
+        item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
+        if item.intervencion:                                                   #Sí ha sido clausurada judicialmente
+            item, itemlist = generictools.post_tmdb_findvideos(item, itemlist)  #Llamamos al método para el pintado del error
+            return itemlist                                                     #Salimos
+        
         logger.error("ERROR 01: FINDVIDEOS: La Web no responde o la URL es erronea: " + item.url + " / DATA: " + data)
         
         #Si no hay datos consistentes, llamamos al método de fail_over para que encuentre un canal que esté activo y pueda gestionar el vídeo
@@ -1482,24 +1534,40 @@ def episodios(item):
     item, data = generictools.fail_over_newpct1(item, verify_fo)
 
     #Limpiamos num. Temporada y Episodio que ha podido quedar por Novedades
+    season_display = 0
     if item.contentSeason:
+        if item.season_colapse:                         #Si viene del menú de Temporadas...
+            season_display = item.contentSeason         #... salvamos el num de sesión a pintar
+            item.from_num_season_colapse = season_display
+            del item.season_colapse
+            item.contentType = "tvshow"
+            if item.from_title_season_colapse:
+                item.title = item.from_title_season_colapse
+                del item.from_title_season_colapse
+                if item.infoLabels['title']:
+                    del item.infoLabels['title']
         del item.infoLabels['season']
     if item.contentEpisodeNumber:
         del item.infoLabels['episode']
+    if season_display == 0 and item.from_num_season_colapse:
+        season_display = item.from_num_season_colapse
 
     # Obtener la información actualizada de la Serie.  TMDB es imprescindible para Videoteca
     if not item.infoLabels['tmdb_id']:
-        tmdb.set_infoLabels(item, True)
+        try:
+            tmdb.set_infoLabels(item, True)                     #TMDB de cada Temp
+        except:
+            pass
         
     modo_ultima_temp_alt = modo_ultima_temp
-    if item.ow_force == "1":                        #Si hay un traspaso de canal o url, se actualiza todo 
+    if item.ow_force == "1":                                    #Si hay un traspaso de canal o url, se actualiza todo 
         modo_ultima_temp_alt = False
     
     max_temp = 1
     if item.infoLabels['number_of_seasons']:
         max_temp = item.infoLabels['number_of_seasons']
     y = []
-    if modo_ultima_temp_alt and item.library_playcounts:         #Averiguar cuantas temporadas hay en Videoteca
+    if modo_ultima_temp_alt and item.library_playcounts:        #Averiguar cuantas temporadas hay en Videoteca
         patron = 'season (\d+)'
         matches = re.compile(patron, re.DOTALL).findall(str(item.library_playcounts))
         for x in matches:
@@ -1526,6 +1594,11 @@ def episodios(item):
             
     #Verificamos si se ha cargado una página, y si además tiene la estructura correcta
     if not data_alt or not scrapertools.find_single_match(data_alt, pattern):
+        item = generictools.web_intervenida(item, data)                         #Verificamos que no haya sido clausurada
+        if item.intervencion:                                                   #Sí ha sido clausurada judicialmente
+            item, itemlist = generictools.post_tmdb_episodios(item, itemlist)   #Llamamos al método para el pintado del error
+            return itemlist                                                     #Salimos
+        
         logger.error("ERROR 01: EPISODIOS: La Web no responde o la URL es erronea: " + item.url)
         logger.error(pattern + data)
 
@@ -1610,9 +1683,7 @@ def episodios(item):
             estado = True                   #Buena calidad de datos por defecto
 
             if "<span" in info:  # new style
-                pattern = ".*?[^>]+>.*?Temporada\s*(?P<season>\d+)?.*?Capitulo(?:s)?\s*(?P<episode>\d+)?" \
-                          "(?:.*?(?P<episode2>\d+)?)<.+?<span[^>]+>(?P<lang>.*?)?<\/span>\s*Calidad\s*<span[^>]+>" \
-                          "[\[]\s*(?P<quality>.*?)?\s*[\]]<\/span>"
+                pattern = "[^>]+>.*?Temporada\s*(?:<span[^>]+>\[\s?)?(?P<season>\d+)?.*?Capitulo(?:s)?\s*(?:<span[^>]+>\[\s?)?(?P<episode>\d+)?(?:.*?(?P<episode2>\d+)?)<.*?<span[^>]+>(?P<lang>.*?)?<\/span>\s*Calidad\s*<span[^>]+>[\[]\s*(?P<quality>.*?)?\s*[\]]<\/span>"
                 if not scrapertools.find_single_match(info, pattern):
                     if "especial" in info.lower():      # Capitulos Especiales
                         pattern = ".*?[^>]+>.*?Temporada.*?\[.*?(?P<season>\d+).*?\].*?Capitulo.*?\[\s*(?P<episode>\d+).*?\]?(?:.*?(?P<episode2>\d+)?)<.+?<span[^>]+>(?P<lang>.*?)?<\/span>\s*Calidad\s*<span[^>]+>[\[]\s*(?P<quality>.*?)?\s*[\]]<\/span>"
@@ -1714,11 +1785,19 @@ def episodios(item):
                     break                   #Sale del bucle actual del FOR de episodios por página
                 #if ('%sx%s' % (str(item_local.contentSeason), str(item_local.contentEpisodeNumber).zfill(2))) in item.library_playcounts:
                 #    continue
-                
+              
+            if season_display > 0:
+                if item_local.contentSeason > season_display:
+                    continue
+                elif item_local.contentSeason < season_display:
+                    break
+            
             if item_local.active:
                 del item_local.active
             if item_local.contentTitle:
                 del item_local.infoLabels['title']
+            if item_local.season_colapse:
+                del item_local.season_colapse
             item_local.context = "['buscar_trailer']"
             item_local.action = "findvideos"
             item_local.contentType = "episode"
@@ -1726,32 +1805,35 @@ def episodios(item):
             
             itemlist.append(item_local.clone())
             
+            #logger.debug(item_local)
+            
         data = ''
 
     if len(itemlist) > 1:
         itemlist = sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))     #clasificamos
+        
+    if item.season_colapse and not item.add_videolibrary:       #Si viene de listado, mostramos solo Temporadas
+        item, itemlist = generictools.post_tmdb_seasons(item, itemlist)
 
-    # Pasada por TMDB y clasificación de lista por temporada y episodio
-    tmdb.set_infoLabels(itemlist, True)
+    if not item.season_colapse:             #Si no es pantalla de Temporadas, pintamos todo
+        # Pasada por TMDB y clasificación de lista por temporada y episodio
+        tmdb.set_infoLabels(itemlist, True)
+
+        #Llamamos al método para el maquillaje de los títulos obtenidos desde TMDB
+        item, itemlist = generictools.post_tmdb_episodios(item, itemlist)
     
     #logger.debug(item)
-
-    #Llamamos al método para el maquillaje de los títulos obtenidos desde TMDB
-    item, itemlist = generictools.post_tmdb_episodios(item, itemlist)
 
     return itemlist
     
     
 def actualizar_titulos(item):
     logger.info()
-    itemlist = []
-    
-    from platformcode import launcher
     
     item = generictools.update_title(item) #Llamamos al método que actualiza el título con tmdb.find_and_set_infoLabels
 
     #Volvemos a la siguiente acción en el canal
-    return launcher.run(item)
+    return item
     
 
 def search(item, texto):

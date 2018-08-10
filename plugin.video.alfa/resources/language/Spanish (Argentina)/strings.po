@@ -303,7 +303,7 @@ msgstr "Populares"
 
 msgctxt "#30985"
 msgid "Top Rated"
-msgstr "Top Rated"
+msgstr "Mejor valoradas"
 
 msgctxt "#30986"
 msgid "Search by Collection"
@@ -503,7 +503,7 @@ msgstr "Filtrar servidores (Lista Negra)"
 
 msgctxt "#60001"
 msgid "Filter server (Black List)\nNo connection available that meets the requirements of the Black list.\nTry again by changing the filter in 'Server Configuration"
-msgstr "Filtrar servidores (Lista Negra)\nNo hay enlaces disponibles que cumplan los requisitos de su Lista Negra.\nPruebe de nuevo modificando el fíltro en 'Configuracíon Servidores""
+msgstr "Filtrar servidores (Lista Negra)\nNo hay enlaces disponibles que cumplan los requisitos de su Lista Negra.\nPruebe de nuevo modificando el fíltro en 'Configuracíon Servidores"
 
 msgctxt "#60003"
 msgid "Connecting with %s"
@@ -1882,11 +1882,11 @@ msgid "Yes, the option to display merged or split \nresults by channels can be f
 msgstr "Sì. La opcion de mostrar los resultados juntos \no divididos por canales se encuentra en \n'setting'>'Ajustes del buscador global'> \n'Otros ajustes'. \n¿Deseas acceder a ahora dichos ajustes?"
 
 msgctxt "#60467"
-msgid "To report a problem on'http://alfa-addon.com' you need to:|the version you're using of Alpha.|The version you're using of kodi, mediaserver, etc.|the version and name of the operating system you're using.|The name of the skin (in case you're using Kodi) and whether using the default skin has solved the problem.|Description of the problem and any test cases.To activate the log in detailed mode, go to:|Configuration.|Preferences.|In the General tab - Check the option: Generate detailed log. The detailed log file can be found in the following path: \n\n%s"
+msgid "To report a problem on'http://alfa-addon.com' you need to:|the version you're using of Alfa.|The version you're using of kodi, mediaserver, etc.|the version and name of the operating system you're using.|The name of the skin (in case you're using Kodi) and whether using the default skin has solved the problem.|Description of the problem and any test cases.To activate the log in detailed mode, go to:|Configuration.|Preferences.|In the General tab - Check the option: Generate detailed log. The detailed log file can be found in the following path: \n\n%s"
 msgstr "Para reportar un problema en 'http://alfa-addon.com' es necesario:\n  - Versión que usas de Alfa.\n  - Versión que usas de kodi, mediaserver, etc.\n  - Versión y nombre del sistema operativo que usas.\n  - Nombre del skin (en el caso que uses Kodi) y si se te ha resuelto el problema al usar el skin por defecto.\n  - Descripción del problema y algún caso de prueba.\n  - Agregar el log en modo detallado, una vez hecho esto, zipea el log y lo puedes adjuntar en un post.\n\nPara activar el log en modo detallado, ingresar a:\n  - Configuración.\n  - Preferencias.\n  - En la pestaña General - Marcar la opción: Generar log detallado.\n\nEl archivo de log detallado se encuentra en la siguiente ruta: \n\n%s"
 
 msgctxt "#60468"
-msgid "You can find our Telegram channel at @StreamOnDemandOfficial\nSe you have doubts you can write to us in the Telegram group: https://bit.ly/2I3kRwF"
+msgid "You can find our Telegram channel at @alfa_addon\nIf you have doubts you can write to us in the Forum: http://alfa-addon.com"
 msgstr "Entérate de novedades, consejos u opciones que desconoces en Telegram: @alfa_addon.\nSi tienes problemas o dudas, puedes acudir al Foro: http://alfa-addon.com"
 
 msgctxt "#60469"
@@ -2207,7 +2207,7 @@ msgstr "Herramientas de canales"
 
 msgctxt "#60549"
 msgid "Check the files * _data.json"
-msgstr "Comprobar archivos *_data.json","
+msgstr "Comprobar archivos *_data.json"
 
 msgctxt "#60550"
 msgid "Servers locked"
@@ -2550,8 +2550,8 @@ msgid "Show option \"All Seasons\"."
 msgstr "Mostrar la opción \"Todas las temporadas\""
 
 msgctxt "#60643"
-msgid "Do not combine the seasons of the series""
-msgstr "No apilar temporadas de series""
+msgid "Do not combine the seasons of the series"
+msgstr "No apilar temporadas de series"
 
 msgctxt "#60644"
 msgid "Only if there is one season"
@@ -2766,7 +2766,7 @@ msgid "Beginning"
 msgstr "Inìcio"
 
 msgctxt "#70013"
-msgid "Terror"
+msgid "Horror"
 msgstr "Terror"
 
 msgctxt "#70014"
@@ -2858,12 +2858,12 @@ msgid "Search %s"
 msgstr "Buscar %s"
 
 msgctxt "#70036"
-msgid "Search actor/actress"
-msgstr "Buscar actor/actriz"
+msgid "     Search actor/actress"
+msgstr "     Buscar actor/actriz"
 
 msgctxt "#70037"
-msgid "Search director, writer..."
-msgstr "Buscar director, guionista..."
+msgid "     Search director, writer..."
+msgstr "     Buscar director, guionista..."
 
 msgctxt "#70038"
 msgid "Custom Filter"
@@ -2895,7 +2895,7 @@ msgstr "Sagas y Colecciones"
 
 msgctxt "#70045"
 msgid "Movies/TV Shows/Documentaries by Themes"
-msgstr "Películas/Series/Documentales por Temas""
+msgstr "Películas/Series/Documentales por Temas"
 
 msgctxt "#70046"
 msgid "Search Movies/TV Shows"
@@ -2975,7 +2975,7 @@ msgstr "Buscar Series/Películas/Ovas"
 
 msgctxt "#70065"
 msgid ">> Next Page"
-msgstr ">> Página siguiente""
+msgstr ">> Página siguiente"
 
 msgctxt "#70066"
 msgid "    Search title in spanish: %s"
@@ -3071,7 +3071,7 @@ msgstr "¿Realmente desea eliminar '%s' de su videoteca?"
 
 msgctxt "#70089"
 msgid "Show only links of %s"
-msgstr "Mostrar solo los enlaces de %s "
+msgstr "Mostrar solo los enlaces de %s"
 
 msgctxt "#70090"
 msgid "    Exclude all streams with specific words"
@@ -3255,7 +3255,7 @@ msgstr "Colores Personalizados"
 
 msgctxt "#70137"
 msgid "Movies"
-msgstr "Peliculas"
+msgstr "Películas"
 
 msgctxt "#70138"
 msgid "Low Rating"
@@ -3820,3 +3820,942 @@ msgstr "Buscando en %s"
 msgctxt "#70283"
 msgid "movie"
 msgstr "pelicula"
+
+msgctxt "#70284"
+msgid "%.2f%% of %.1fMB %s | %.1f kB/s"
+msgstr "%.2f%% de %.1fMB %s | %.1f kB/s"
+
+msgctxt "#70285"
+msgid "Configure News"
+msgstr "Configurar Novedades"
+
+msgctxt "#70286"
+msgid "Configure Search"
+msgstr "Configurar Buscador"
+
+msgctxt "#70286"
+msgid "Configure Search"
+msgstr "Configurar Buscador"
+
+msgctxt "#70287"
+msgid "Configure VideoLibrary"
+msgstr "Configurar Videoteca"
+
+msgctxt "#70288"
+msgid "Configure Downloads"
+msgstr "Configurar Descargas"
+
+msgctxt "#70291"
+msgid "Error, during conversion"
+msgstr "Error, en conversión"
+
+# Servers ---- 
+msgctxt "#70292"
+msgid "[%s] File no longer exist on this server."
+msgstr "[%s] El archivo ya no está presente en el servidor."
+ 
+msgctxt "#70293"
+msgid "[%s] The file is processing or has been deleted."
+msgstr "[%s] El archivo de video todavía se está procesando o se ha eliminado."
+
+msgctxt "#70294"
+msgid "[%s] Link Not valid."
+msgstr "[%s] Enlace no válido."
+
+msgctxt "#70295"
+msgid "[%s] Premium account needed."
+msgstr "[%s] Debes tener una cuenta premium."
+
+msgctxt "#70296"
+msgid "[%s] Internal server error."
+msgstr "[%s] Error interno del servidor."
+
+msgctxt "#70297"
+msgid "[%s] File is awaiting for moderation."
+msgstr "[%s] El video está esperando por moderación."
+
+msgctxt "#70298"
+msgid "[%s] The number of allowed reproductions has been exceeded."
+msgstr "[%s] Se ha excedido el número de reproducciones permitidas."
+
+msgctxt "#70299"
+msgid "[%s] You do not have permission to access this file."
+msgstr "[%s] No tienes permiso para acceder a este video."
+
+msgctxt "#70300"
+msgid "[%s] Too many connections to the server, try later."
+msgstr "[%s] Demasiadas conexiones al servidor, inténtelo después."
+
+msgctxt "#70301"
+msgid "[%s] File deleted for infringement."
+msgstr "[%s] Archivo eliminado por infracción."
+
+msgctxt "#70302"
+msgid "[%s] This server only works from Kodi 17."
+msgstr "[%s] Este conector solo funciona a partir de Kodi 17."
+
+msgctxt "#70303"
+msgid "[%s] This server does not work with your version of Plex, try to update it."
+msgstr "[%s] Este conector no funciona con tu versión de Plex, intenta actualizarla."
+
+msgctxt "#70304"
+msgid "[%s] This server requires updating python to version 2.7.9 or higher."
+msgstr "[%s] Este conector requiere actualizar python a la versión 2.7.9 o superior."
+# ============
+
+msgctxt "#70305"
+msgid "Search in channels"
+msgstr "Buscar en canales"
+
+msgctxt "#70306"
+msgid "Movies by Genre"
+msgstr "Películas por Generos"
+
+msgctxt "#70307"
+msgid "Most popular Movies"
+msgstr "Películas mas populares"
+
+msgctxt "#70308"
+msgid "Top rated Movies"
+msgstr "Películas mejor valoradas"
+
+msgctxt "#70309"
+msgid "Movies Now in Theatres "
+msgstr "Películas Ahora en cines"
+
+msgctxt "#70310"
+msgid "Series by Genre"
+msgstr "Series por Generos"
+
+msgctxt "#70311"
+msgid "Series most polupar"
+msgstr "Series mas populares"
+
+msgctxt "#70312"
+msgid "Series in progress"
+msgstr "Series en emisión"
+
+msgctxt "#70313"
+msgid "Top rated Series"
+msgstr "Series mejor valoradas"
+
+msgctxt "#70314"
+msgid "Actors/Actresses"
+msgstr "Actores/Actrices"
+
+msgctxt "#70315"
+msgid "Recommendations"
+msgstr "Recomendaciones"
+
+msgctxt "#70316"
+msgid "List of Images"
+msgstr "Lista de Imágenes"
+
+msgctxt "#70317"
+msgid "Listen to BSO - List of songs"
+msgstr "Escuchar BSO - Lista de canciones"
+
+msgctxt "#70318"
+msgid "Manage your trakt account"
+msgstr "Gestionar con tu cuenta Trakt"
+
+msgctxt "#70319"
+msgid "Filming equipment"
+msgstr "Equipo de rodaje"
+
+msgctxt "#70320"
+msgid "Filter search"
+msgstr "Filtra la búsqueda"
+
+msgctxt "#70321"
+msgid "[MAL] Add to your lists/%s"
+msgstr "[MAL] Añadir a tus listas/%s"
+
+msgctxt "#70322"
+msgid "[MAL] in your list of [COLOR %s]%s[/COLOR] Do you want to change?/%s"
+msgstr "[MAL] En tu lista de [COLOR %s]%s[/COLOR]. ¿Cambiar?/%s"
+
+msgctxt "#70323"
+msgid "[Trakt] Manage your account"
+msgstr "[Trakt] Gestionar con tu cuenta"
+
+msgctxt "#70324"
+msgid "[FA] My vote: %s  ---> Change?"
+msgstr "[FA] Mi voto: %s  ---> ¿Cambiar?"
+
+msgctxt "#70325"
+msgid "[FA] Vote %s"
+msgstr "[FA] Votar %s"
+
+msgctxt "#70326"
+msgid "[FA] Add or remove from a user list"
+msgstr "[FA] Añadir o quitar de una lista de usuario"
+
+msgctxt "#70327"
+msgid "It's part of: %s"
+msgstr "Es parte de: %s"
+
+msgctxt "#70328"
+msgid "%ss similarar"
+msgstr "%ss similares"
+
+msgctxt "#70329"
+msgid "User and/or passwords not configured"
+msgstr "Usuario y/o contraseñas no configurados"
+
+msgctxt "#70330"
+msgid "Error in the user and/or password. Check your credentials"
+msgstr "Error en el usuario y/o contraseña. Comprueba tus credenciales"
+
+msgctxt "#70331"
+msgid "Error during login. Check your credentials
+msgstr "Error durante el login. Comprueba tus credenciales"
+
+msgctxt "#70332"
+msgid "My votes"
+msgstr "Mis votaciones"
+
+msgctxt "#70333"
+msgid "Add new list"
+msgstr "Añadir una nueva lista"
+
+msgctxt "#70334"
+msgid "Action completed successfully"
+msgstr "Acción completada con éxito"
+
+msgctxt "#70335"
+msgid "Error, something has failed during the process"
+msgstr "Error, algo ha fallado durante el proceso"
+
+msgctxt "#70336"
+msgid "Vote %s"
+msgstr "Votar %s"
+
+msgctxt "#70337"
+msgid "Vote completed successfully"
+msgstr "Voto contabilizado con éxito"
+
+msgctxt "#70338"
+msgid "List created correctly"
+msgstr "Lista creada correctamente"
+
+msgctxt "#70339"
+msgid "Fanart.tv website not available. Retry"
+msgstr "Web de Fanart.tv no disponible. Vuelve a intentarlo"
+
+msgctxt "#70340"
+msgid "No images available"
+msgstr "No hay imágenes disponibles"
+
+msgctxt "#70341"
+msgid "[Trakt] Mark %s as not seen"
+msgstr "[Trakt] Marcar %s como no vista"
+
+msgctxt "#70342"
+msgid "[Trakt] Mark %s as seen"
+msgstr "[Trakt] Marcar %s como vista"
+
+msgctxt "#70343"
+msgid "[Trakt] Remove %s from your watchlist"
+msgstr "[Trakt] Eliminar %s de tu watchlist"
+
+msgctxt "#70344"
+msgid "Add to %s your watchlist""
+msgstr "[Trakt] Añadir %s a tu watchlist"
+
+msgctxt "#70345"
+msgid "[Trakt] Remove %s from your collection"
+msgstr "[Trakt] Eliminar %s de tu colección"
+
+msgctxt "#70346"
+msgid "[Trakt] Add %s to your collection
+msgstr "[Trakt] Añadir %s a tu colección"
+
+msgctxt "#70347"
+msgid "Action performed correctly"
+msgstr "Acción realizada correctamente"
+
+msgctxt "#70348"
+msgid "An error occurred in process"
+msgstr "Hubo error en el proceso"
+
+msgctxt "#70349"
+msgid "List sorted by %s. Change order?"
+msgstr "Lista ordenada por %s. ¿Cambiar orden?"
+
+msgctxt "#70350"
+msgid "Search in alfa: %s"
+msgstr "Buscar en alfa: %s"
+
+msgctxt "#70351"
+msgid "    Search alternative title: %s"
+msgstr "    Buscar por título alternativo: %s"
+
+msgctxt "#70352"
+msgid "    Search title in english: %s"
+msgstr "    Buscar por su título en inglés: %s"
+
+msgctxt "#70353"
+msgid "Vídeos (Episodes, Trailers...)"
+msgstr "Vídeos (Episodios, Trailers...)"
+
+msgctxt "#70354"
+msgid "Characters/Staff"
+msgstr "Personajes/Staff"
+
+msgctxt "#70355"
+msgid "Prequel: %s"
+msgstr "Precuela: %s"
+
+msgctxt "#70356"
+msgid "Sequel: %s"
+msgstr "Secuela: %s"
+
+msgctxt "#70357"
+msgid "Alternative version: %s"
+msgstr "Versión alternativa: %s"
+
+msgctxt "#70358"
+msgid "Recommendations TMDB"
+msgstr "Recomendaciones TMDB"
+
+msgctxt "#70359"
+msgid "Recommendations MyAnimeList"
+msgstr "Recomendaciones MyAnimeList"
+
+msgctxt "#70360"
+msgid "  [COLOR %s][Without subs in castellan][/COLOR]"
+msgstr "  [COLOR %s][Sin subs en castellano][/COLOR]"
+
+msgctxt "#70361"
+msgid ">> More Episodes"
+msgstr ">> Más Episodios"
+
+msgctxt "#70362"
+msgid "Episodes"
+msgstr "Episodios"
+
+msgctxt "#70363"
+msgid "Trailers/Promotions"
+msgstr "Tráilers/Promocionales"
+
+msgctxt "#70364"
+msgid "Winter"
+msgstr "Invierno"
+
+msgctxt "#70365"
+msgid "Spring"
+msgstr "Primavera"
+
+msgctxt "#70366"
+msgid "Summer"
+msgstr "Verano"
+
+msgctxt "#70367"
+msgid "Fall"
+msgstr "Otoño"
+
+msgctxt "#70368"
+msgid "(New)"
+msgstr "(Nuevos)"
+
+msgctxt "#70369"
+msgid "(Continuation)"
+msgstr "(Continuación)"
+
+msgctxt "#70370"
+msgid "Characters/Benders"
+msgstr "Personajes/Dobladores"
+
+msgctxt "#70371"
+msgid "Principal"
+msgstr "Principal"
+
+msgctxt "#70372"
+msgid "Secondary"
+msgstr "Secundario"
+
+msgctxt "#70373"
+msgid "Animes where it appears:"
+msgstr "Animes donde aparece:"
+
+msgctxt "#70374"
+msgid "Give voice to/in:"
+msgstr "Da voz a/en:"
+
+msgctxt "#70375"
+msgid "Staff in animes:"
+msgstr "Staff en animes:"
+
+msgctxt "#70376"
+msgid "Info in AniDB   [COLOR %s]%s[/COLOR]"
+msgstr "Info en AniDB   [COLOR %s]%s[/COLOR]"
+
+msgctxt "#70377"
+msgid "  - [COLOR %s]Fansubs in spanish:[/COLOR]"
+msgstr "  - [COLOR %s]Fansubs en español:[/COLOR]"
+
+msgctxt "#70378"
+msgid "Complete"
+msgstr "Completa"
+
+msgctxt "#70379"
+msgid "Finished"
+msgstr "Terminada"
+
+msgctxt "#70380"
+msgid "Stalled"
+msgstr "Pausa"
+
+msgctxt "#70381"
+msgid "Dropped"
+msgstr "Abandonada"
+
+msgctxt "#70381"
+msgid "Myanimelist username and/or password blank"
+msgstr "Usuario y/o contraseña de Myanimelist en blanco"
+
+msgctxt "#70382"
+msgid "Currently watching"
+msgstr "Viendo actualmente"
+
+msgctxt "#70383"
+msgid "Completed"
+msgstr "Completados"
+
+msgctxt "#70384"
+msgid "Pause"
+msgstr "En pausa"
+
+msgctxt "#70385"
+msgid "Descarted"
+msgstr "Descartados"
+
+msgctxt "#70386"
+msgid "See later"
+msgstr "Ver más adelante"
+
+msgctxt "#70387"
+msgid "E = In emission | F = Completed | P = Coming soon"
+msgstr "E=En emisión | F=Finalizado | P=Próximamente"
+
+msgctxt "#70388"
+msgid ". Available actions:"
+msgstr ". Acciones disponibles:"
+
+msgctxt "#70389"
+msgid ". In your list [COLOR %s]%s[/COLOR]"
+msgstr ". En tu lista [COLOR %s]%s[/COLOR]"
+
+msgctxt "#70390"
+msgid "Anime: %s%s"
+msgstr "Anime: %s%s"
+
+msgctxt "#70391"
+msgid "Add to list %s"
+msgstr "Añadir a lista %s"
+
+msgctxt "#70392"
+msgid "Rate with a [COLOR %s]%s[/ COLOR]"
+msgstr "Puntuar con un [COLOR %s]%s[/COLOR]"
+
+msgctxt "#70393"
+msgid "[%s]: Select the correct %s "
+msgstr "[%s]: Selecciona la %s correcta"
+
+msgctxt "#70394"
+msgid "Action"
+msgstr "Accion"
+
+msgctxt "#70395"
+msgid "Sport"
+msgstr "Deportes"
+
+msgctxt "#70396"
+msgid "Documentary"
+msgstr "Documental"
+
+msgctxt "#70397"
+msgid "Science fiction"
+msgstr "Ciencia Ficción"
+
+msgctxt "#70398"
+msgid "Talk Show"
+msgstr "Entrevistas"
+
+msgctxt "#70399"
+msgid "Family"
+msgstr "Familia"
+
+msgctxt "#70400"
+msgid "Film-Noir"
+msgstr "Cine Negro"
+
+msgctxt "#70401"
+msgid "Game-Show"
+msgstr "Concursos"
+
+msgctxt "#70402"
+msgid "Mystery"
+msgstr "Intriga"
+
+msgctxt "#70403"
+msgid "Biography"
+msgstr "Biografía"
+
+msgctxt "#70404"
+msgid "Music"
+msgstr "Música"
+
+msgctxt "#70405"
+msgid "History"
+msgstr "Historia"
+
+msgctxt "#70406"
+msgid "Reality-TV"
+msgstr "Reality"
+
+msgctxt "#70407"
+msgid "War"
+msgstr "Cine Bélico"
+
+msgctxt "#70408"
+msgid "Musical"
+msgstr "Musical"
+
+msgctxt "#70409"
+msgid "Romance"
+msgstr "Romance"
+
+msgctxt "#70410"
+msgid "Thriller"
+msgstr "Thriller"
+
+msgctxt "#70411"
+msgid "Western"
+msgstr "Western"
+
+msgctxt "#70412"
+msgid "Drama"
+msgstr "Drama"
+
+msgctxt "#70413"
+msgid "2. Enter this code on the page and click Allow:  %s"
+msgstr "2. Ingresa este código en la página y presiona Allow:  %s"
+
+msgctxt "#70414"
+msgid "Authentication. Do not close this window!!"
+msgstr "Autentificación. No cierres esta ventana!!"
+
+msgctxt "#70415"
+msgid "Trakt.tv"
+msgstr "Trakt.tv"
+
+msgctxt "#70416"
+msgid "=== Movies ==="
+msgstr "=== Peliculas ==="
+
+msgctxt "#70417"
+msgid "=== TV Shows ==="
+msgstr "=== Series ==="
+
+msgctxt "#70418"
+msgid "Search language in TMDB"
+msgstr "Idioma de búsqueda en TMDB"
+
+msgctxt "#70419"
+msgid "German"
+msgstr "Alemán"
+
+msgctxt "#70420"
+msgid "French"
+msgstr "Francés"
+
+msgctxt "#70421"
+msgid "Portuguese"
+msgstr "Portugués"
+
+msgctxt "#70422"
+msgid "Italian"
+msgstr "Italiano"
+
+msgctxt "#70423"
+msgid "Spanish Latin"
+msgstr "Español Latino"
+
+msgctxt "#70424"
+msgid "Catalan"
+msgstr "Catalán"
+
+msgctxt "#70425"
+msgid "English"
+msgstr "Inglés"
+
+msgctxt "#70426"
+msgid "Alternative language for TMDB (No main language synopsis)"
+msgstr "Idioma alternativo para TMDB (No sinopsis idioma principal)"
+
+msgctxt "#70427"
+msgid "Language of titles in IMDB"
+msgstr "Idioma de los títulos en IMDB"
+
+msgctxt "#70428"
+msgid "Filmaffinity website"
+msgstr "Sitio Web Filmaffinity"
+
+msgctxt "#70429"
+msgid "Colombia"
+msgstr "Colombia"
+
+msgctxt "#70430"
+msgid "Chile"
+msgstr "Chile"
+
+msgctxt "#70431"
+msgid "Argentina"
+msgstr "Argentina"
+
+msgctxt "#70432"
+msgid "Mexico"
+msgstr "México"
+
+msgctxt "#70433"
+msgid "US/UK"
+msgstr "US/UK"
+
+msgctxt "#70434"
+msgid "Spain"
+msgstr "España"
+
+msgctxt "#70435"
+msgid "User Filmaaffinity (Optional)"
+msgstr "Usuario Filmaffinity (Opcional)"
+
+msgctxt "#70436"
+msgid "Password Filmaffinity"
+msgstr "Contraseña Filmaffinity"
+
+msgctxt "#70437"
+msgid "Order personal lists of Filmaffinity by:"
+msgstr "Ordenar listas personales de Filmaffinity por:"
+
+msgctxt "#70438"
+msgid "Position"
+msgstr "Posición"
+
+msgctxt "#70439"
+msgid "Vote"
+msgstr "Voto"
+
+msgctxt "#70440"
+msgid "Average grade"
+msgstr "Nota media"
+
+msgctxt "#70441"
+msgid "User MyAnimeList (Optional)"
+msgstr "Usuario MyAnimeList (Opcional)"
+
+msgctxt "#70442"
+msgid "Password MyAnimeList"
+msgstr "Contraseña MyAnimeList"
+
+msgctxt "#70443"
+msgid "Show Hentai in MyAnimeList"
+msgstr "Mostrar Hentais en MyAnimeList"
+
+msgctxt "#70444"
+msgid "Profile 3"
+msgstr "Perfil 3"
+
+msgctxt "#70445"
+msgid "Profile 2"
+msgstr "Perfil 2"
+
+msgctxt "#70446"
+msgid "Profile 1"
+msgstr "Perfil 1"
+
+msgctxt "#70447"
+msgid "[%s] The file has been deleted"
+msgstr "[%s] El fichero ha sido borrado"
+
+msgctxt "#70448"
+msgid "[%s] The file is still in process"
+msgstr "[%s] El fichero está en proceso todavía"
+
+msgctxt "#70449"
+msgid "[%s] The file does not exist or has been deleted"
+msgstr "[%s] El archivo no existe o ha sido borrado"
+
+msgctxt "#70450"
+msgid "Anyone"
+msgstr "Cualquiera"
+
+msgctxt "#70451"
+msgid "Select one, none or more than one gender"
+msgstr "Selecciona uno, ninguno o más de un género"
+
+msgctxt "#70452"
+msgid "Year from"
+msgstr "Año desde:"
+
+msgctxt "#70453"
+msgid "Year until"
+msgstr "Año hasta:"
+
+msgctxt "#70454"
+msgid "Minimum number of votes"
+msgstr "Número mínimo de votos"
+
+msgctxt "#70455"
+msgid "Order by"
+msgstr "Ordenar por"
+
+msgctxt "#70456"
+msgid "Popularity Desc"
+msgstr "Popularidad Desc"
+
+msgctxt "#70457"
+msgid "Popularity Asc"
+msgstr "Popularidad Asc"
+
+msgctxt "#70458"
+msgid "Year Desc"
+msgstr "Año Desc"
+
+msgctxt "#70459"
+msgid "Year Asc"
+msgstr "Año Asc"
+
+msgctxt "#70460"
+msgid "Desc Rating"
+msgstr "Valoración Desc"
+
+msgctxt "#70461"
+msgid "Asc Rating"
+msgstr "Valoración Asc"
+
+msgctxt "#70462"
+msgid "Title [A-Z]"
+msgstr "Título [A-Z]"
+
+msgctxt "#70463"
+msgid "Title [Z-A]"
+msgstr "Título [Z-A]"
+
+msgctxt "#70464"
+msgid "Set as default filter"
+msgstr "Establecer como filtro por defecto"
+
+msgctxt "#70465"
+msgid "Key word"
+msgstr "Palabra Clave"
+
+msgctxt "#70466"
+msgid "Country"
+msgstr "País"
+
+msgctxt "#70467"
+msgid "Select a genre"
+msgstr "Selecciona un género"
+
+msgctxt "#70468"
+msgid "Indicate your vote"
+msgstr "Indica tu voto:"
+
+msgctxt "#70469"
+msgid "Added"
+msgstr "Añadido"
+
+msgctxt "#70470"
+msgid "Premiere"
+msgstr "Estreno"
+
+msgctxt "#70471"
+msgid "Duration"
+msgstr "Duración"
+
+msgctxt "#70472"
+msgid "Popularity"
+msgstr "Popularidad"
+
+msgctxt "#70473"
+msgid "Rating"
+msgstr "Valoración"
+
+msgctxt "#70474"
+msgid "Votes"
+msgstr "Votos"
+
+msgctxt "#70475"
+msgid "upward"
+msgstr "ascendente"
+
+msgctxt "#70476"
+msgid "falling"
+msgstr "descendente"
+
+msgctxt "#70477"
+msgid "Upward"
+msgstr "Ascendente"
+
+msgctxt "#70478"
+msgid "Falling"
+msgstr "Descendente"
+
+msgctxt "#70479"
+msgid "Currently watching"
+msgstr "Viendo Actualmente"
+
+msgctxt "#70480"
+msgid "Completed"
+msgstr "Completados"
+
+msgctxt "#70481"
+msgid "Anticipated to see"
+msgstr "Previstos para ver"
+
+msgctxt "#70482"
+msgid "Kind"
+msgstr "Tipo"
+
+msgctxt "#70483"
+msgid "Special"
+msgstr "Especial"
+
+msgctxt "#70484"
+msgid "OVA"
+msgstr "OVA"
+
+msgctxt "#70485"
+msgid "Status"
+msgstr "Estado"
+
+msgctxt "#70486"
+msgid "(1) Grotesque"
+msgstr "(1) Grotesca"
+
+msgctxt "#70487"
+msgid "(2) Horrible"
+msgstr "(2) Horrible"
+
+msgctxt "#70488"
+msgid "(3) Very bad"
+msgstr "(3) Muy mala"
+
+msgctxt "#70489"
+msgid "(4) Bad"
+msgstr "(4) Mala"
+
+msgctxt "#70490"
+msgid "(5) Regular"
+msgstr "(5) Regular"
+
+msgctxt "#70491"
+msgid "(6) Pasable"
+msgstr "(6) Pasable"
+
+msgctxt "#70492"
+msgid "(7) Good"
+msgstr "(7) Buena"
+
+msgctxt "#70493"
+msgid "(8) Very good"
+msgstr "(8) Muy buena"
+
+msgctxt "#70494"
+msgid "(9) Genial"
+msgstr "(9) Genial"
+
+msgctxt "#70495"
+msgid "(10) Masterpiece"
+msgstr "(10) Obra maestra"
+
+msgctxt "#70496"
+msgid "The search for "
+msgstr "La busqueda de "
+
+msgctxt "#70497"
+msgid " did not match."
+msgstr " no dio resultados."
+
+msgctxt "#70497"
+msgid " did not match."
+msgstr " no dio resultados."
+
+msgctxt "#70498"
+msgid "Producer: "
+msgstr "Productora: "
+
+msgctxt "#70499"
+msgid "Genre: "
+msgstr "Género: "
+
+msgctxt "#70500"
+msgid "Notification([COLOR red][B]Update Kodi to its latest version[/B][/COLOR], [COLOR skyblue]for best info[/COLOR],8000, "http://i.imgur.com/mHgwcn3.png")"
+msgstr "Notification([COLOR red][B]Actualiza Kodi a su última versión[/B][/COLOR], [COLOR skyblue]para mejor info[/COLOR],8000, "http://i.imgur.com/mHgwcn3.png")"
+
+msgctxt "#70501"
+msgid "Search did not match (%s)"
+msgstr "La búsqueda no ha dado resultados (%s)"
+
+msgctxt "#70502"
+msgid ">> Next"
+msgstr ">> Siguiente"
+
+msgctxt "#70503"
+msgid "There is no available video"
+msgstr "No hay ningún vídeo disponible"
+
+msgctxt "#70504"
+msgid "Loading trailers..."
+msgstr "Cargando trailers..."
+
+msgctxt "#70505"
+msgid "Enter the title to search"
+msgstr "Introduce el título a buscar"
+
+msgctxt "#70506"
+msgid "Searching: "
+msgstr "Buscando: "
+
+msgctxt "#70507"
+msgid "Search in Youtube"
+msgstr "Búsqueda en Youtube"
+
+msgctxt "#70508"
+msgid "Search in Abandomoviez"
+msgstr "Búsqueda en Abandomoviez"
+
+msgctxt "#70509"
+msgid "Search in Jayhap (Youtube, Vimeo & Dailymotion)"
+msgstr "Búsqueda en Jayhap (Youtube, Vimeo & Dailymotion)"
+
+msgctxt "#70510"
+msgid "Manual Search in Youtube"
+msgstr "Búsqueda Manual en Youtube"
+
+msgctxt "#70511"
+msgid "Manual Search in Abandomoviez"
+msgstr "Búsqueda Manual en Abandomoviez"
+
+msgctxt "#70512"
+msgid "Searching in abandomoviez"
+msgstr "Buscando en abandomoviez"
+
+msgctxt "#70513"
+msgid "Manual Searching in Filmaffinity"
+msgstr "Búsqueda Manual en Filmaffinity"
+
+msgctxt "#70514"
+msgid "Manual Search in Jayhap"
+msgstr "Búsqueda Manual en Jayhap"
+
+msgctxt "#70515"
+msgid "[COLOR aquamarine][B]Completed %s[/B][/COLOR]"
+msgstr "[COLOR aquamarine][B]Finalizada %s[/B][/COLOR]"
+
+msgctxt "#70516"
+msgid "[COLOR aquamarine][B]In progress %s[/B][/COLOR]"
+msgstr "[COLOR aquamarine][B]En emisión %s[/B][/COLOR]"
+

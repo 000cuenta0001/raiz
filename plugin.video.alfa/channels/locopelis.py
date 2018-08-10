@@ -2,15 +2,21 @@
 
 import re
 import urlparse
+import urllib
 
 from channels import autoplay
 from channels import filtertools
 from core import httptools
 from core import scrapertools
+from core import servertools
+from core import jsontools
 from core import tmdb
 from core.item import Item
 from platformcode import config, logger
 from channelselector import get_thumb
+
+
+
 IDIOMAS = {'Latino': 'Latino', 'Español': 'Español', 'Sub español': 'VOS'}
 list_language = IDIOMAS.values()
 list_quality = []
@@ -18,11 +24,17 @@ list_servers = [
     'openload',
 ]
 
-host = 'http://www.locopelis.com/'
+host = 'https://www.locopelis.com/'
 
 audio = {'Latino': '[COLOR limegreen]LATINO[/COLOR]', 'Español': '[COLOR yellow]ESPAÑOL[/COLOR]',
          'Sub Español': '[COLOR red]SUB ESPAÑOL[/COLOR]'}
 
+
+def get_source(url):
+    logger.info()
+    data = httptools.downloadpage(url).data
+    data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
+    return data
 
 def mainlist(item):
     logger.info()
@@ -127,8 +139,6 @@ def todas(item):
         idioma = scrapertools.decodeHtmlentities(idioma_id)
         # if idioma == 'Espa&ntilde;ol':
         #    idioma ='Español'
-        logger.debug('idioma original: %s' % idioma_id)
-        logger.debug('idioma: %s' % idioma)
         if idioma in audio:
             idioma = audio[idioma]
 
@@ -242,10 +252,8 @@ def ultimas(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    data = data.decode('cp1252')
     realplot = ''
-    patron = '<a href="([^"]+)" title="([^"]+)"><img src="([^"]+)" alt=.*? style="width:105px; height:160px; ' \
-             'border:1px solid #999"\/><\/a>'
+    patron = '<a href="([^"]+)" title="([^"]+)"> <img src="([^"]+)".*?solid'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
 
@@ -302,10 +310,7 @@ def letras(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    data = data.decode('cp1252')
-    data = scrapertools.find_single_match(data, '<\/form><\/table><\/div>.*?<\/ul>')
-
-    patron = '<li><a href="(.*?)" title="Letra.*?">(.*?)<\/a><\/li>'
+    patron = '<li><a href="([^"]+)" title="Letra.*?">([^<]+)<\/a><\/li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle in matches:
@@ -338,41 +343,48 @@ def search(item, texto):
         return []
 
 
+def get_link(data):
+    new_url = scrapertools.find_single_match(data, '(?:IFRAME|iframe) src=(.*?) scrolling')
+    return new_url
+
 def findvideos(item):
     logger.info()
+
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    try:
+        new_url = get_link(get_source(item.url))
+        new_url = get_link(get_source(new_url))
+        video_id = scrapertools.find_single_match(new_url, 'http.*?h=(\w+)')
+        new_url = '%s%s' % (host, 'playeropstream/api.php')
+        post = {'h': video_id}
+        post = urllib.urlencode(post)
+        data = httptools.downloadpage(new_url, post=post).data
+        json_data = jsontools.load(data)
+        url = json_data['url']
+        server = servertools.get_server_from_url(url)
+        title = '%s [%s]' % (server, item.language)
+        itemlist.append(Item(channel=item.channel, title=title, url=url, action='play', language=item.language,
+                             server=server, infoLabels=item.infoLabels))
 
-    from core import servertools
-    itemlist.extend(servertools.find_video_items(data=data))
-    if item.language == 'Espa&ntilde;ol':
-        item.language == 'Español'
-    for videoitem in itemlist:
-        videoitem.language = IDIOMAS[item.language]
-        videoitem.title = item.contentTitle + ' (' + videoitem.server + ') (' + videoitem.language + ')'
-        videoitem.channel = item.channel
-        videoitem.folder = False
-        videoitem.extra = item.thumbnail
-        videoitem.fulltitle = item.title
-        videoitem.quality = 'default'
-        videoitem.infoLabels = item.infoLabels
+        # Requerido para FilterTools
 
-    # Requerido para FilterTools
+        itemlist = filtertools.get_links(itemlist, item, list_language)
 
-    itemlist = filtertools.get_links(itemlist, item, list_language)
+        # Requerido para AutoPlay
 
-    # Requerido para AutoPlay
+        autoplay.start(itemlist, item)
 
-    autoplay.start(itemlist, item)
+        if config.get_videolibrary_support() and len(itemlist) > 0 and item.extra != 'findvideos':
+            itemlist.append(Item(channel=item.channel,
+                                 title='[COLOR yellow]Añadir esta pelicula a la videoteca[/COLOR]',
+                                 url=item.url,
+                                 action="add_pelicula_to_library",
+                                 extra="findvideos",
+                                 contentTitle=item.contentTitle
+                                 ))
+    except:
+        pass
 
-    if config.get_videolibrary_support() and len(itemlist) > 0 and item.extra != 'findvideos':
-        itemlist.append(Item(channel=item.channel,
-                             title='[COLOR yellow]Añadir esta pelicula a la videoteca[/COLOR]',
-                             url=item.url,
-                             action="add_pelicula_to_library",
-                             extra="findvideos",
-                             contentTitle=item.contentTitle
-                             ))
     return itemlist
 
 
