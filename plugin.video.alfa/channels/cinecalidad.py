@@ -265,7 +265,7 @@ def findvideos(item):
                 "http://thevideos.tv/": "thevideos",
                 "http://ul.to/": "uploadedto",
                 "http://turbobit.net/": "turbobit",
-                "http://www.cinecalidad.com/protect/v.html?i=": "cinecalidad",
+                "http://www.cinecalidad.to/protect/v.html?i=": "cinecalidad",
                 "http://www.mediafire.com/download/": "mediafire",
                 "https://www.youtube.com/watch?v=": "youtube",
                 "http://thevideos.tv/embed-": "thevideos",
@@ -311,8 +311,7 @@ def findvideos(item):
                   'Mega': '',
                   'MediaFire': ''}
     dec_value = scrapertools.find_single_match(data, 'String\.fromCharCode\(parseInt\(str\[i\]\)-(\d+)\)')
-
-    torrent_link = scrapertools.find_single_match(data, '<a href="/protect/v\.php\?i=([^"]+)"')
+    torrent_link = scrapertools.find_single_match(data, '<a href=".*?/protect/v\.php\?i=([^"]+)"')
     if torrent_link != '':
         import urllib
         base_url = '%s/protect/v.php' % host
@@ -340,7 +339,7 @@ def findvideos(item):
         itemlist.append(new_item)
 
     for video_cod, server_id in matches:
-        if server_id not in ['Mega', 'MediaFire', 'Trailer', '']:
+        if server_id not in ['MediaFire', 'Trailer', '']:
             video_id = dec(video_cod, dec_value)
 
         if server_id in server_url:
@@ -429,13 +428,13 @@ def newest(categoria):
     item = Item()
     try:
         if categoria in ['peliculas','latino']:
-            item.url = 'http://www.cinecalidad.com'
+            item.url = 'http://www.cinecalidad.to'
         elif categoria == 'infantiles':
-            item.url = 'http://www.cinecalidad.com/genero-peliculas/infantil/'
+            item.url = 'http://www.cinecalidad.to/genero-peliculas/infantil/'
         elif categoria == 'terror':
-            item.url = 'http://www.cinecalidad.com/genero-peliculas/terror/'
+            item.url = 'http://www.cinecalidad.to/genero-peliculas/terror/'
         elif categoria == 'castellano':
-            item.url = 'http://www.cinecalidad.com/espana/'
+            item.url = 'http://www.cinecalidad.to/espana/'
         itemlist = peliculas(item)
         if itemlist[-1].title == 'Página siguiente >>':
             itemlist.pop()

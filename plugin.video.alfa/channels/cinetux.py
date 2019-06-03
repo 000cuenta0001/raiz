@@ -10,7 +10,7 @@ from core.item import Item
 from platformcode import config, logger
 from channelselector import get_thumb
 
-IDIOMAS = {'Latino': 'Latino', 'Subtitulado': 'Subtitulado', 'Español': 'Español', 'SUB': 'SUB' }
+IDIOMAS = {'Latino': 'Latino', 'Subtitulado': 'Subtitulado', 'Español': 'Español', 'SUB': 'SUB', '': 'Latino', 'VO':'VO' }
 list_language = IDIOMAS.values()
 list_quality = []
 list_servers = ['rapidvideo', 'streamango', 'okru', 'vidoza', 'openload', 'powvideo', 'netutv','gvideo']
@@ -226,7 +226,7 @@ def findvideos(item):
     patron  = 'tooltipctx.*?data-type="([^"]+).*?'
     patron += 'data-post="(\d+)".*?'
     patron += 'data-nume="(\d+).*?'
-    patron += 'class="title">.*?src.*?/>([^<]+)'
+    patron += '</noscript> (.*?)</'
     matches = scrapertools.find_multiple_matches(data, patron)
     for tp, pt, nm, language in matches:
         language = language.strip()
@@ -249,6 +249,8 @@ def findvideos(item):
     patron = "<a class='optn' href='([^']+)'.*?<img src='.*?>([^<]+)<.*?<img src='.*?>([^<]+)<"
     matches = scrapertools.find_multiple_matches(data, patron)
     for hidden_url, quality, language in matches:
+        if language == 'Inglés':
+            language = 'VO'
         if not config.get_setting('unify'):
             title = ' [%s][%s]' % (quality, IDIOMAS[language])
         else:
@@ -283,16 +285,15 @@ def get_url(url):
     url = url.replace('\\/', '/')
     if "cinetux.me" in url:
         d1 = httptools.downloadpage(url).data
-        if "mail" in url or "drive" in url or "ok.cinetux" in url or "mp4/" in url:
+        url = scrapertools.find_single_match(d1, 'document.location.replace\("([^"]+)')
+        if url == "":
             id = scrapertools.find_single_match(d1, '<img src="[^#]+#([^"]+)"')
             d1 = d1.replace("'",'"')
-            url = scrapertools.find_single_match(d1, '<iframe src="([^"]+)') + id
+            url = scrapertools.find_single_match(d1, '<iframe.*?src="([^"]+)') + id
             if "drive" in url:
                 url += "/preview"
             if "FFFFFF" in url:
                 url = scrapertools.find_single_match(d1, 'class="cta" href="([^"]+)"')
-        else:
-            url = scrapertools.find_single_match(d1, 'document.location.replace\("([^"]+)')
     url = url.replace("povwideo","powvideo")
     return url
 
