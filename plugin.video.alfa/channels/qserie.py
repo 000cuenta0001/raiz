@@ -8,7 +8,6 @@ from core import httptools
 from core import scrapertools
 from core import servertools
 from core import tmdb
-from core import jsontools
 from core.item import Item
 from platformcode import config, logger
 
@@ -335,12 +334,11 @@ def findvideos(item):
     itemlist = []
     new_url = get_link(get_source(item.url))
     new_url = get_link(get_source(new_url))
-    video_id = scrapertools.find_single_match(new_url, 'http.*?h=(\w+)')
-    new_url = '%s%s' % (host, 'playeropstream/api.php')
+    _api, video_id = scrapertools.find_single_match(new_url, 'http.*?/(\w+)/.*?h=(\w+)')
+    new_url = '%s%s' % (host, '%s/api.php' % _api)
     post = {'h': video_id}
     post = urllib.urlencode(post)
-    data = httptools.downloadpage(new_url, post=post).data
-    json_data = jsontools.load(data)
+    json_data = httptools.downloadpage(new_url, post=post).json
     url = json_data['url']
     server = servertools.get_server_from_url(url)
     title = '%s' % server

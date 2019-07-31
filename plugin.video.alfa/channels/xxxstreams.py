@@ -8,13 +8,13 @@ from core.item import Item
 from platformcode import config, logger
 from core import httptools
 
-host = 'http://xxxstreams.org'
+host = 'http://xxxstreams.org' #es hhttp://freepornstreams.org
 
 def mainlist(item):
     logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Peliculas" , action="lista", url= host + "/category/full-porn-movie-stream/"))
-    itemlist.append( Item(channel=item.channel, title="Clips" , action="lista", url=host))
+    itemlist.append( Item(channel=item.channel, title="Clips" , action="lista", url=host + "/category/new-porn-streaming/"))
     itemlist.append( Item(channel=item.channel, title="Canal" , action="categorias", url=host))
     itemlist.append( Item(channel=item.channel, title="Categorias" , action="categorias", url=host))
     itemlist.append( Item(channel=item.channel, title="Buscar", action="search"))
@@ -64,10 +64,11 @@ def lista(item):
     for scrapedthumbnail,scrapedurl,scrapedtitle in matches:
         scrapedplot = ""
         if '/HD' in scrapedtitle : title= "[COLOR red]" + "HD" + "[/COLOR] " + scrapedtitle
+        elif 'SD' in scrapedtitle : title= "[COLOR red]" + "SD" + "[/COLOR] " + scrapedtitle
         elif 'FullHD' in scrapedtitle : title= "[COLOR red]" + "FullHD" + "[/COLOR] " + scrapedtitle
         elif '1080' in scrapedtitle : title= "[COLOR red]" + "1080p" + "[/COLOR] " + scrapedtitle
         else: title = scrapedtitle
-        itemlist.append( Item(channel=item.channel, action="play", title=title, url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
                                fanart=scrapedthumbnail, thumbnail=scrapedthumbnail,plot=scrapedplot) )
     next_page = scrapertools.find_single_match(data,'<a class="next page-numbers" href="([^"]+)">Next &rarr;</a>')
     if next_page!="":
@@ -76,9 +77,14 @@ def lista(item):
     return itemlist
 
 
-def play(item):
-    logger.info(item)
-    itemlist = servertools.find_video_items(item.clone(url = item.url))
+def findvideos(item):
+    itemlist = []
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)
+    patron = '<a href="([^"]+)" rel="nofollow"[^<]+>Streaming'
+    matches = scrapertools.find_multiple_matches(data, patron)
+    for url in matches:
+        itemlist.append(item.clone(action='play',title="%s", url=url))
+        logger.debug (url)
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     return itemlist
-
-

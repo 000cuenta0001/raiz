@@ -90,11 +90,15 @@ def setting_torrent(item):
     logger.info()
 
     LIBTORRENT_PATH = config.get_setting("libtorrent_path", server="torrent", default="")
+    LIBTORRENT_ERROR = config.get_setting("libtorrent_error", server="torrent", default="")
     default = config.get_setting("torrent_client", server="torrent", default=0)
     BUFFER = config.get_setting("mct_buffer", server="torrent", default="50")
     DOWNLOAD_PATH = config.get_setting("mct_download_path", server="torrent", default=config.get_setting("downloadpath"))
     BACKGROUND = config.get_setting("mct_background_download", server="torrent", default=True)
     RAR = config.get_setting("mct_rar_unpack", server="torrent", default=True)
+    DOWNLOAD_LIMIT = config.get_setting("mct_download_limit", server="torrent", default="")
+    BUFFER_BT = config.get_setting("bt_buffer", server="torrent", default="50")
+    DOWNLOAD_PATH_BT = config.get_setting("bt_download_path", server="torrent", default=config.get_setting("downloadpath"))
 
     torrent_options = [config.get_localized_string(30006), config.get_localized_string(70254), config.get_localized_string(70255)]
     torrent_options.extend(platformtools.torrent_client_installed())
@@ -106,6 +110,14 @@ def setting_torrent(item):
             "type": "text",
             "label": "Libtorrent path",
             "default": LIBTORRENT_PATH,
+            "enabled": True,
+            "visible": False
+        },
+        {
+            "id": "libtorrent_error",
+            "type": "text",
+            "label": "libtorrent error",
+            "default": LIBTORRENT_ERROR,
             "enabled": True,
             "visible": False
         },
@@ -135,36 +147,44 @@ def setting_torrent(item):
             "visible": "eq(-2,%s)" % torrent_options[2]
         },
         {
-            "id": "mct_background_download",
-            "type": "bool",
-            "label": "MCT - ¿Se procesa la descarga en segundo plano?",
-            "default": BACKGROUND,
-            "enabled": True,
-            "visible": "eq(-3,%s)" % torrent_options[2]
-        },
-        {
-            "id": "mct_rar_unpack",
-            "type": "bool",
-            "label": "MCT - ¿Quiere que se descompriman los archivos RAR y ZIP para su reproducción?",
-            "default": RAR,
-            "enabled": True,
-            "visible": "eq(-4,%s)" % torrent_options[2]
-        },
-        {
             "id": "bt_buffer",
             "type": "text",
             "label": "BT - Tamaño del Buffer a descargar antes de la reproducción",
-            "default": BUFFER,
+            "default": BUFFER_BT,
             "enabled": True,
-            "visible": "eq(-5,%s)" % torrent_options[1]
+            "visible": "eq(-3,%s)" % torrent_options[1]
         },
         {
             "id": "bt_download_path",
             "type": "text",
             "label": "BT - Ruta de la carpeta de descarga",
-            "default": DOWNLOAD_PATH,
+            "default": DOWNLOAD_PATH_BT,
             "enabled": True,
-            "visible": "eq(-6,%s)" % torrent_options[1]
+            "visible": "eq(-4,%s)" % torrent_options[1]
+        },
+        {
+            "id": "mct_download_limit",
+            "type": "text",
+            "label": "Límite (en Kb's) de la velocidad de descarga en segundo plano (NO afecta a RAR)",
+            "default": DOWNLOAD_LIMIT,
+            "enabled": True,
+            "visible": "eq(-5,%s) | eq(-5,%s)" % (torrent_options[1], torrent_options[2])
+        },
+        {
+            "id": "mct_rar_unpack",
+            "type": "bool",
+            "label": "¿Quiere que se descompriman los archivos RAR y ZIP para su reproducción?",
+            "default": RAR,
+            "enabled": True,
+            "visible": True
+        },
+        {
+            "id": "mct_background_download",
+            "type": "bool",
+            "label": "¿Se procesa la descompresión de RARs en segundo plano?",
+            "default": BACKGROUND,
+            "enabled": True,
+            "visible": True
         }
     ]
 
@@ -183,6 +203,12 @@ def save_setting_torrent(item, dict_data_saved):
         config.set_setting("mct_background_download", dict_data_saved["mct_background_download"], server="torrent")
     if dict_data_saved and "mct_rar_unpack" in dict_data_saved:
         config.set_setting("mct_rar_unpack", dict_data_saved["mct_rar_unpack"], server="torrent")
+    if dict_data_saved and "mct_download_limit" in dict_data_saved:
+        config.set_setting("mct_download_limit", dict_data_saved["mct_download_limit"], server="torrent")
+    if dict_data_saved and "bt_buffer" in dict_data_saved:
+        config.set_setting("bt_buffer", dict_data_saved["bt_buffer"], server="torrent")
+    if dict_data_saved and "bt_download_path" in dict_data_saved:
+        config.set_setting("bt_download_path", dict_data_saved["bt_download_path"], server="torrent")
 
 def menu_servers(item):
     logger.info()
@@ -1099,8 +1125,11 @@ def report_send(item, description='', fatal=False):
             
             # Si la petición es con formato REQUESTS, se realiza aquí
             elif paste_type == 'requests':
-                data = requests.post(paste_host, params=paste_params, files=paste_file, 
-                            timeout=paste_timeout)
+                #data = requests.post(paste_host, params=paste_params, files=paste_file, 
+                #            timeout=paste_timeout)
+                data = httptools.downloadpage(paste_host, params=paste_params, file=log_data, 
+                            file_name=paste_title+'.log', timeout=paste_timeout, 
+                            random_headers=paste_random_headers, headers=paste_headers)
         except:
             msg = 'Inténtelo más tarde'
             logger.error('Fallo al guardar el informe. ' + msg)
@@ -1117,16 +1146,16 @@ def report_send(item, description='', fatal=False):
             # Respuestas a peticiones REQUESTS
             if paste_type == 'requests':                                # Respuesta de petición tipo "requests"?
                 if paste_resp == 'json':                                                # Respuesta en formato JSON?
-                    if paste_resp_key in data.text:
+                    if paste_resp_key in data.data:
                         if not paste_url:
-                            key = jsontools.load(data.text)[paste_resp_key]             # con una etiqueta
+                            key = jsontools.load(data.data)[paste_resp_key]             # con una etiqueta
                         else:
-                            key = jsontools.load(data.text)[paste_resp_key][paste_url]  # con dos etiquetas anidadas
+                            key = jsontools.load(data.data)[paste_resp_key][paste_url]  # con dos etiquetas anidadas
                         item.url = "%s%s%s" % (paste_host_resp+paste_host_return, key, 
                                     paste_host_return_tail)
                     else:
-                        logger.error('ERROR en formato de retorno de datos. data.text=' + 
-                                    str(data.text))
+                        logger.error('ERROR en formato de retorno de datos. data.data=' + 
+                                    str(data.data))
                         continue
             
             # Respuestas a peticiones DOWNLOADPAGE
