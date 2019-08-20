@@ -18,7 +18,7 @@ from channels import autoplay
 from platformcode import config, logger
 
 
-IDIOMAS = {'la': 'LAT', 'es': 'CAST', 'sub': 'VOSE', 'en': 'VO'}
+IDIOMAS = {'la': 'LAT', 'es': 'CAST', 'sub': 'VOSE', 'si':'VOS', 'en': 'VO'}
 list_language = IDIOMAS.values()
 list_quality = []
 list_servers = ['rapidvideo', 'verystream', 'streamplay']
@@ -128,16 +128,20 @@ def list_news(item):
             url = '%ssecure/titles/%s?titleId=%s&seasonNumber=%s' % (host, id, id, se_ep[0])
 
         if url not in listed:
-            new_item= Item(channel=item.channel, title=title, url=url, thumbnail=thumb, infoLabels=infoLabels)
+            new_item= Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=thumb, infoLabels=infoLabels)
 
             if item.news_type == 'movies':
                 new_item.contentTitle = title
                 new_item.action = 'findvideos'
                 listed.append(url)
             else:
+                ep = int(se_ep[1])
                 new_item.contentSerieName = contentSerieName
-                new_item.action = 'episodesxseason'
-                infoLabels['season'] = se_ep[0]
+                new_item.url += '&episodeNumber=%s' % ep
+                new_item.ep_info = ep -1
+                #new_item.infoLabels['season'] = se_ep[0]
+                new_item.infoLabels['episode'] = ep
+                listed.append(url)
 
             itemlist.append(new_item)
 
@@ -218,7 +222,6 @@ def seasons(item):
     if len(json_data) > 0:
         for elem in json_data['title']['seasons']:
             infoLabels['season'] = elem['number']
-            '''https://pepecine.com/secure/titles/523?titleId=523&seasonNumber=1'''
             url = '%s&seasonNumber=%s' % (item.url, elem['number'])
             title = 'Temporada %s' % elem['number']
             itemlist.append(Item(channel=item.channel, action='episodesxseason', title=title, url=url,
@@ -254,13 +257,14 @@ def episodesxseason(item):
     if len(json_data) > 0:
         for elem in json_data['title']['season']['episodes']:
 
-            '''https://pepecine.com/secure/titles/523?titleId=523&seasonNumber=5&episodeNumber=1'''
-
             infoLabels['episode'] = elem['episode_number']
+            ep_info = int(elem['episode_number']) -1
             url = '%s&episodeNumber=%s' % (item.url, elem['episode_number'])
             title = '%s' % elem['name']
-            itemlist.append(Item(channel=item.channel, action='findvideos', title=title, url=url,
-                                 infoLabels= infoLabels))
+            if not config.get_setting('unify'):
+                title = '%sx%s %s' % (item.infoLabels['season'], infoLabels['episode'], elem['name'])
+            itemlist.append(Item(channel=item.channel, action='findvideos', title=title, ep_info=ep_info, url=url,
+                                 infoLabels=infoLabels))
     tmdb.set_infoLabels(itemlist, True)
 
     return itemlist
@@ -269,23 +273,33 @@ def findvideos(item):
     logger.info()
 
     itemlist = []
-
     data = get_source(item.url)
     json_data = jsontools.load(data)
     if len(json_data) > 0:
-        for elem in json_data['title']['videos']:
+        videos_info = json_data['title']['videos']
+
+        if str(item.ep_info) != '':
+            epi_num = item.ep_info
+            videos_info = json_data['title']['season']['episodes'][epi_num]['videos']
+        for elem in videos_info:
             lang = scrapertools.find_single_match(elem['name'], '/(.*?).png')
-            if len(lang) > 2 and lang != 'sub':
+            logger.debug(lang)
+
+            if len(lang) > 2 and not 'sub' in lang:
                 lang = lang[-2:]
+            elif 'sub' in lang:
+                lang = 'sub'
+            #else:
+            #    lang = 'en'
+
             url = elem['url']
+            
+            lang = IDIOMAS.get(lang, 'VO')
+            
             if not config.get_setting('unify'):
                 title = ' [%s]' % lang
             else:
                 title = ''
-            if lang != '':
-                lang = IDIOMAS[lang]
-            else:
-                lang = 'VO'
             itemlist.append(Item(channel=item.channel, title='%s' + title, action='play', url=url,
                                  language=lang, infoLabels=item.infoLabels))
 
@@ -318,14 +332,24 @@ def search_results(item):
     if json_data['results']:
         for elem in json_data['results']:
             url = '%ssecure/titles/%s?titleId=%s' % (host, elem['id'], elem['id'])
-            year = elem['year']
-
-            if elem['is_series']:
-                series_list.append(Item(channel=item.channel, title=elem['name'], url=url, action='seasons',
-                                        contentSerieName=elem['name']))
+            try:
+                year = elem['year']
+                name = elem['name']
+                is_series = elem['is_series']
+            except:
+                name = elem['popular_credits'][0]['name']
+                is_series = elem['popular_credits'][0]['is_series']
+                try:
+                    year = elem['popular_credits'][0]['year']
+                except:
+                    year = '-'
+                    
+            if is_series:
+                series_list.append(Item(channel=item.channel, title=name, url=url, action='seasons',
+                                        contentSerieName=name))
             else:
-                movies_list.append(Item(channel=item.channel, title=elem['name'], url=url, action='findvideos',
-                                        contentTitle=elem['name'], infoLabels={'year':year}))
+                movies_list.append(Item(channel=item.channel, title=name, url=url, action='findvideos',
+                                        contentTitle=name, infoLabels={'year':year}))
 
         if item.search_type == 'series':
             itemlist = series_list
@@ -341,6 +365,7 @@ def search(item, texto):
     logger.info()
     texto = texto.replace(" ", "+")
     item.url = '%s%s?type=&limit=30' % (item.url, texto)
+    logger.info()
     if texto != '':
         return search_results(item)
     else:

@@ -8,6 +8,9 @@ import json
 import traceback
 import xbmc
 import xbmcaddon
+import threading
+import subprocess
+import time
 
 from platformcode import config, logger, platformtools
 
@@ -61,14 +64,20 @@ def init():
         verify_Kodi_video_DB()
         
         #LIBTORRENT: se descarga el binario de Bibtorrent cada vez que se actualiza Alfa
-        update_libtorrent()
+        try:
+            threading.Thread(target=update_libtorrent).start()      # Creamos un Thread independiente, hasta el fin de Kodi
+            time.sleep(2)                                           # Dejamos terminar la inicialización...
+        except:                                                     # Si hay problemas de threading, nos vamos
+            logger.error(traceback.format_exc())
         
         #QUASAR: Preguntamos si se hacen modificaciones a Quasar
         if not filetools.exists(os.path.join(config.get_data_path(), "quasar.json")) and not config.get_setting('addon_quasar_update', default=False):
             question_update_external_addon("quasar")
         
         #QUASAR: Hacemos las modificaciones a Quasar, si está permitido, y si está instalado
-        if config.get_setting('addon_quasar_update', default=False) or (filetools.exists(os.path.join(config.get_data_path(), "quasar.json")) and not xbmc.getCondVisibility('System.HasAddon("plugin.video.quasar")')):
+        if config.get_setting('addon_quasar_update', default=False) or \
+                        (filetools.exists(os.path.join(config.get_data_path(), \
+                        "quasar.json")) and not xbmc.getCondVisibility('System.HasAddon("plugin.video.quasar")')):
             if not update_external_addon("quasar"):
                 platformtools.dialog_notification("Actualización Quasar", "Ha fallado. Consulte el log")
         
@@ -111,6 +120,8 @@ def create_json(custom_code_json_path, json_name=json_data_file_name):
 
     #Guardamaos el json con la versión de Alfa vacía, para permitir hacer la primera copia
     json_data_file = filetools.join(custom_code_json_path, json_name)
+    if filetools.exists(json_data_file):
+        filetools.remove(json_data_file)
     json_file = open(json_data_file, "a+")
     json_file.write(json.dumps({"addon_version": ""}))
     json_file.close()
@@ -125,8 +136,14 @@ def verify_copy_folders(custom_code_dir, custom_code_json_path):
     json_data_file = filetools.join(custom_code_json_path, json_data_file_name)
     json_data = jsontools.load(filetools.read(json_data_file))
     current_version = config.get_addon_version(with_fix=False)
-    if current_version == json_data['addon_version']:
-        return
+    if not json_data or not 'addon_version' in json_data: 
+        create_json(custom_code_json_path)
+        json_data = jsontools.load(filetools.read(json_data_file))
+    try:
+        if current_version == json_data['addon_version']:
+            return
+    except:
+        logger.error(traceback.format_exc(1))
     
     #Ahora copiamos los archivos desde el área de Userdata, Custom_code, sobre las carpetas del add-on
     for root, folders, files in os.walk(custom_code_dir):
@@ -205,16 +222,105 @@ def update_external_addon(addon_name):
 def update_libtorrent():
     logger.info()
     
-    if filetools.exists(os.path.join(config.get_runtime_path(), "custom_code.json")):
+    if not config.get_setting("mct_buffer", server="torrent", default=""):
+        default = config.get_setting("torrent_client", server="torrent", default=0)
+        config.set_setting("torrent_client", default, server="torrent")
+        config.set_setting("mct_buffer", "50", server="torrent")
+        config.set_setting("mct_download_path", config.get_setting("downloadpath"), server="torrent")
+        config.set_setting("mct_background_download", True, server="torrent")
+        config.set_setting("mct_rar_unpack", True, server="torrent")
+        config.set_setting("bt_buffer", "50", server="torrent")
+        config.set_setting("bt_download_path", config.get_setting("downloadpath"), server="torrent")
+    if not config.get_setting("mct_download_limit", server="torrent", default=""):
+        config.set_setting("mct_download_limit", "", server="torrent")
+        
+    if not filetools.exists(os.path.join(config.get_runtime_path(), "custom_code.json")) or not \
+                    config.get_setting("unrar_path", server="torrent", default=""):
+    
+        path = os.path.join(config.get_runtime_path(), 'lib', 'rarfiles')
+        creationflags = ''
+        sufix = ''
+        unrar = ''
+        for device in filetools.listdir(path):
+            if xbmc.getCondVisibility("system.platform.android") and 'android' not in device: continue
+            if xbmc.getCondVisibility("system.platform.windows") and 'windows' not in device: continue
+            if not xbmc.getCondVisibility("system.platform.windows") and not  xbmc.getCondVisibility("system.platform.android") \
+                        and ('android' in device or 'windows' in device): continue
+            if 'windows' in device:
+                creationflags = 0x08000000
+                sufix = '.exe'
+            else:
+                creationflags = ''
+                sufix = ''
+            unrar = os.path.join(path, device, 'unrar%s') % sufix
+            if not filetools.exists(unrar): unrar = ''
+            if unrar:
+                if not xbmc.getCondVisibility("system.platform.windows"):
+                    try:
+                        if xbmc.getCondVisibility("system.platform.android"):
+                            # Para Android copiamos el binario a la partición del sistema
+                            unrar_org = unrar
+                            unrar = os.path.join(xbmc.translatePath('special://xbmc/'), 'files').replace('/cache/apk/assets', '')
+                            if not filetools.exists(unrar):
+                                filetools.mkdir(unrar)
+                            unrar = os.path.join(unrar, 'unrar')
+                            import xbmcvfs
+                            xbmcvfs.copy(unrar_org, unrar)
+                        command = ['chmod', '777', '%s' % unrar]
+                        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        output_cmd, error_cmd = p.communicate()
+                        command = ['ls', '-l', unrar]
+                        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        output_cmd, error_cmd = p.communicate()
+                        xbmc.log('######## UnRAR file: %s' % str(output_cmd), xbmc.LOGNOTICE)
+                    except:
+                        xbmc.log('######## UnRAR ERROR in path: %s' % str(unrar), xbmc.LOGNOTICE)
+                        logger.error(traceback.format_exc(1))
+
+                try:
+                    if xbmc.getCondVisibility("system.platform.windows"):
+                        p = subprocess.Popen(unrar, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=creationflags)
+                    else:
+                        p = subprocess.Popen(unrar, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    output_cmd, error_cmd = p.communicate()
+                    if p.returncode != 0:
+                        xbmc.log('######## UnRAR returncode in module %s: %s in %s' % (device, str(p.returncode), unrar), xbmc.LOGNOTICE)
+                        unrar = ''
+                    else:
+                        xbmc.log('######## UnRAR OK in %s: %s' % (device, unrar), xbmc.LOGNOTICE)
+                        break
+                except:
+                    xbmc.log('######## UnRAR ERROR in module %s: %s' % (device, unrar), xbmc.LOGNOTICE)
+                    logger.error(traceback.format_exc(1))
+                    unrar = ''
+        
+        if unrar: config.set_setting("unrar_path", unrar, server="torrent")
+
+    if filetools.exists(os.path.join(config.get_runtime_path(), "custom_code.json")) and \
+                    config.get_setting("libtorrent_path", server="torrent", default="") :
         return
     
-    if filetools.exists(filetools.join(xbmc.translatePath('special://home'), 'lib', 'python_libtorrent')):
-        import time
-        filetools.rmdir(filetools.join(xbmc.translatePath('special://home'), 'lib', 'python_libtorrent'))
-        time.sleep(1)
-        filetools.rmdir(filetools.join(xbmc.translatePath('special://home'), 'lib'))
+    if xbmc.getCondVisibility("system.platform.android"):
+        LIBTORRENT_PATH = config.get_setting("libtorrent_path", server="torrent", default='')
+        LIBTORRENT_MSG = config.get_setting("libtorrent_msg", server="torrent", default='')
+        if '/data/app/' not in LIBTORRENT_PATH and not LIBTORRENT_MSG:
+            platformtools.dialog_notification('ALFA: Instalando Cliente Torrent interno', \
+                        'Puede solicitarle permisos de Superusuario', time=15000)
+            xbmc.log('### ALFA: Notificación enviada: Instalando Cliente Torrent interno', \
+                        xbmc.LOGNOTICE)
+            config.set_setting("libtorrent_msg", 'OK', server="torrent")
+
+    try:
+        from lib.python_libtorrent.python_libtorrent import get_libtorrent
+    except Exception, e:
+        logger.error(traceback.format_exc(1))
+        e = unicode(str(e), "utf8", errors="replace").encode("utf8")
+        config.set_setting("libtorrent_path", "", server="torrent")
+        if not config.get_setting("libtorrent_error", server="torrent", default=''):
+            config.set_setting("libtorrent_error", str(e), server="torrent")
     
-    from lib.python_libtorrent.python_libtorrent import get_libtorrent
+    return
+    
 
 def verify_Kodi_video_DB():
     logger.info()
