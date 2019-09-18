@@ -18,10 +18,11 @@ from channelselector import get_thumb
 
 host = "https://hdfull.me"
 
-_silence = config.get_setting('silence_mode', 'hdfull')
-show_langs = config.get_setting('show_langs', 'hdfull')
+_silence = config.get_setting('silence_mode', channel='hdfull')
+show_langs = config.get_setting('show_langs', channel='hdfull')
 unify = config.get_setting('unify')
-__modo_grafico__ = config.get_setting('modo_grafico', 'hdfull')
+__modo_grafico__ = config.get_setting('modo_grafico', channel='hdfull')
+account = config.get_setting("logged", channel="hdfull")
 
 IDIOMAS = {'lat': 'LAT', 'spa': 'CAST', 'esp': 'CAST', 'sub': 'VOSE', 'espsub': 'VOSE', 'engsub': 'VOS', 'eng': 'VO'}
 list_language = IDIOMAS.values()
@@ -31,9 +32,6 @@ list_servers = ['flix555', 'clipwatching', 'verystream', 'gamovideo', 'powvideo'
 
 def login():
     logger.info()
-    logged = config.get_setting("logged", channel="hdfull")
-    if logged:
-        return True
     data = httptools.downloadpage(host).data
     _logged = '<a href="%s/logout"' % host
     if _logged in data:
@@ -43,8 +41,8 @@ def login():
         patron = "<input type='hidden' name='__csrf_magic' value=\"([^\"]+)\" />"
     
         sid = urllib.quote(scrapertools.find_single_match(data, patron))
-        user_ = config.get_setting('hdfulluser', 'hdfull')
-        pass_ = config.get_setting('hdfullpassword', 'hdfull')
+        user_ = config.get_setting('hdfulluser', channel='hdfull')
+        pass_ = config.get_setting('hdfullpassword', channel='hdfull')
         if not pass_:
             if not _silence:
                 platformtools.dialog_notification("Falta la contraseña", 
@@ -68,12 +66,6 @@ def login():
                                              sound=False)
             config.set_setting("logged", False, channel="hdfull")
             return False
-
-
-if config.get_setting('hdfulluser', 'hdfull'):
-    account = login()
-else:
-    account = False
 
 
 def settingCanal(item):
@@ -103,6 +95,11 @@ def logout(item):
 def mainlist(item):
     logger.info()
     itemlist = []
+    if config.get_setting('hdfulluser', channel='hdfull'):
+        account = login()
+    else:
+        account = False
+
 
     autoplay.init(item.channel, list_servers, list_quality)
     
@@ -279,12 +276,14 @@ def search(item, texto):
 def series_abc(item):
     logger.info()
     itemlist = []
+    page = config.get_setting('pagination_abc', channel='hdfull')
+    page = 0 if page else ''
     az = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     for l in az:
         itemlist.append(
             Item(channel=item.channel, action='fichas', title=l, 
-                 url=host + "%s/series/abc/%s" % (host, l.replace('#', '9')),
-                 thumbnail=item.thumbnail))
+                 url= "%s/series/abc/%s" % (host, l.replace('#', '9')),
+                 thumbnail=item.thumbnail, page=page, text_bold=True))
     return itemlist
 
 
@@ -351,7 +350,7 @@ def items_usuario(item):
             itemlist.append(
                 Item(channel=item.channel, action="findvideos", title=title, 
                      contentTitle=show, url=url, thumbnail=thumbnail,
-                    text_bold=True, infoLabels={'year': '-'}))
+                     text_bold=True, infoLabels={'year': '-'}))
     if len(itemlist) == int(limit):
         itemlist.append(
             Item(channel=item.channel, action="items_usuario", title=">> Página siguiente", url=next_page, text_bold=True))
@@ -378,6 +377,7 @@ def items_usuario(item):
 def fichas(item):
     logger.info()
     itemlist = []
+    or_matches = ""
     textoidiomas=''
     infoLabels=dict()
     ## Carga estados
@@ -411,6 +411,11 @@ def fichas(item):
     )
     patron = "'url':'([^']+)';'image':'([^']+)';'langs':'([^']+)';'rating':'([^']+)';'title':([^;]+);'id':'([^']+)';"
     matches = re.compile(patron, re.DOTALL).findall(data)
+    
+    if item.page != '':
+        or_matches = matches
+        matches = matches[item.page:item.page + 40]
+    
     for scrapedurl, scrapedthumbnail, scrapedlangs, scrapedrating, scrapedtitle, scrapedid in matches:
 
         thumbnail = scrapedthumbnail.replace('tthumb/130x190', 'thumbs')
@@ -475,6 +480,11 @@ def fichas(item):
     if next_page_url != "":
         itemlist.append(Item(channel=item.channel, action="fichas", title=">> Página siguiente",
                              url=urlparse.urljoin(item.url, next_page_url), text_bold=True))
+
+    elif item.page != '':
+        if item.page + 40 < len(or_matches):
+            itemlist.append(item.clone(page=item.page + 40, title=">> Página siguiente",
+                                       text_bold=True, text_color="blue"))
     
     tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
     
@@ -743,7 +753,7 @@ def findvideos(item):
         if "Favorito" in item.title:
             title = " [COLOR darkgrey][B]( Quitar de Favoritos )[/B][/COLOR]"
 
-        it1.append(Item(channel=item.channel, action="set_status", title=title, contentTitle=title, url=url_targets,
+        it1.append(Item(channel=item.channel, action="set_status", title=title, url=url_targets,
                         thumbnail=item.thumbnail, contentTitle=item.contentTitle, language=item.language, folder=True))
 
     data_js = httptools.downloadpage("%s/templates/hdfull/js/jquery.hdfull.view.min.js" % host).data

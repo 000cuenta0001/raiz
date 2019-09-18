@@ -10,51 +10,18 @@ try:
     import xbmc, xbmcgui
 except:
     pass
-from platformcode import config
+
+from platformcode import config, logger
 LIBTORRENT_PATH = config.get_setting("libtorrent_path", server="torrent", default='')
 
-try:
-    e = ''
-    e1 = ''
-    e2 = ''
-    pathname = ''
-    try:
-        import libtorrent as lt
-        pathname = LIBTORRENT_PATH
-    except Exception, e:
-        try:
-            import imp
-            from ctypes import CDLL
-            dll_path = os.path.join(LIBTORRENT_PATH, 'liblibtorrent.so')
-            liblibtorrent = CDLL(dll_path)
-            path_list = [LIBTORRENT_PATH, xbmc.translatePath('special://xbmc')]
-            fp, pathname, description = imp.find_module('libtorrent', path_list)
-            try:
-                lt = imp.load_module('libtorrent', fp, pathname, description)
-            finally:
-                if fp: fp.close()
-        
-        except Exception, e1:
-            xbmc.log(traceback.format_exc(), xbmc.LOGERROR)
-            from lib.python_libtorrent.python_libtorrent import get_libtorrent
-            lt = get_libtorrent()
-
-except Exception, e2:
-    try:
-        xbmc.log(traceback.format_exc(), xbmc.LOGERROR)
-        do = xbmcgui.Dialog()
-        e = e1 or e2
-        do.ok('ERROR en el cliente BT Libtorrent', 'Módulo no encontrado o imcompatible con el dispositivo.', 
-                    'Reporte el fallo adjuntando un "log"', str(e))
-    except:
-        pass
+from servers import torrent as torr
+lt, e, e1, e2 = torr.import_libtorrent(LIBTORRENT_PATH)
 
 from cache import Cache
 from dispatcher import Dispatcher
 from file import File
 from handler import Handler
 from monitor import Monitor
-from platformcode import logger, config
 from resume_data import ResumeData
 from server import Server
 
@@ -76,7 +43,24 @@ class Client(object):
                         'udp://tracker.coppersurfer.tk:80',
                         'udp://tracker.leechers-paradise.org:6969',
                         'udp://exodus.desync.com:6969',
-                        'udp://tracker.publicbt.com:80']
+                        'udp://tracker.publicbt.com:80',
+                        'http://tracker.torrentbay.to:6969/announce',
+                        'http://tracker.pow7.com/announce',
+                        'udp://tracker.ccc.de:80/announce',
+                        'udp://open.demonii.com:1337',
+                        'http://9.rarbg.com:2710/announce',
+                        'http://bt.careland.com.cn:6969/announce',
+                        'http://explodie.org:6969/announce',
+                        'http://mgtracker.org:2710/announce',
+                        'http://tracker.best-torrents.net:6969/announce',
+                        'http://tracker.tfile.me/announce',
+                        'http://tracker1.wasabii.com.tw:6969/announce',
+                        'udp://9.rarbg.com:2710/announce',
+                        'udp://9.rarbg.me:2710/announce',
+                        'udp://coppersurfer.tk:6969/announce',
+                        'http://www.spanishtracker.com:2710/announce',
+                        'http://www.todotorrents.com:2710/announce'
+                       ]                                                        ### Added some trackers from MCT
 
     VIDEO_EXTS = {'.avi': 'video/x-msvideo', '.mp4': 'video/mp4', '.mkv': 'video/x-matroska',
                   '.m4v': 'video/mp4', '.mov': 'video/quicktime', '.mpg': 'video/mpeg', '.ogv': 'video/ogg',
@@ -139,8 +123,9 @@ class Client(object):
         # Sesion
         self._cache = Cache(self.temp_path)
         self._ses = lt.session()
-        self._ses.listen_on(0, 0)
+        #self._ses.listen_on(0, 0)                                              ### ALFA: it blocks repro of some .torrents
         # Cargamos el archivo de estado (si existe)
+        """                                                                     ### ALFA: it blocks repro of some .torrents
         if os.path.exists(os.path.join(self.temp_path, self.state_file)):
             try:
                 f = open(os.path.join(self.temp_path, self.state_file), "rb")
@@ -149,6 +134,7 @@ class Client(object):
                 f.close()
             except:
                 pass
+        """
 
         self._start_services()
 
@@ -385,6 +371,7 @@ class Client(object):
         self._ses.add_dht_router("router.bittorrent.com", 6881)
         self._ses.add_dht_router("router.bitcomet.com", 554)
         self._ses.add_dht_router("router.utorrent.com", 6881)
+        self._ses.add_dht_router("dht.transmissionbt.com",6881)                 ### from MCT
         self._ses.start_dht()
         self._ses.start_lsd()
         self._ses.start_upnp()

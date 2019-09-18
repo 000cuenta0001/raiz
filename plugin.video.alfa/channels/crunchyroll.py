@@ -127,8 +127,8 @@ def mainlist(item):
                                url=host + "/videos/drama/alpha"))
     itemlist.append(item.clone(title="Buscar...", action="search",
                                url=host + "/search?q=%s&o=m", text_color=color2))
-    if item.proxy != "usa":
-        itemlist.append(item.clone(action="calendario", title="Calendario de Estrenos Anime", text_color=color4,
+    
+    itemlist.append(item.clone(action="calendario", title="Calendario de Estrenos Anime", text_color=color4,
                                    url=host + "/simulcastcalendar"))
     itemlist.append(item.clone(title="Configuración del canal", action="configuracion", text_color="gold"))
     return itemlist
@@ -160,7 +160,7 @@ def lista(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for id, title, url, thumb, videos in matches:
         if item.proxy:
-            url = proxy_i + url.replace("&amp;b=4", "")
+            url = urllib.unquote(url.replace("/browse.php?u=", "").replace("&amp;b=4", ""))
         elif not item.proxy:
             url = host + url
         thumb = urllib.unquote(thumb.replace("/browse.php?u=", "").replace("_thumb", "_full").replace("&amp;b=4", ""))
@@ -179,11 +179,12 @@ def lista(item):
 def episodios(item):
     logger.info()
     itemlist = []
-    episodes_list = []
+    episodes_list_1 = []
     _season = 1
 
     data = get_source(item.url).data
     data = re.sub(r'\n|\t|\s{2,}', '', data)
+    logger.error(data)
     patron = '<li id="showview_videos.*?href="([^"]+)".*?(?:src|data-thumbnailUrl)="([^"]+)".*?media_id="([^"]+)"' \
              'style="width:(.*?)%.*?<span class="series-title.*?>\s*(.*?)</span>.*?<p class="short-desc".*?>' \
              '\s*(.*?)</p>.*?description":"(.*?)"'
@@ -197,11 +198,12 @@ def episodios(item):
                 itemlist.append(item.clone(action="", title=season, text_color=color3))
             for url, thumb, media_id, visto, scrapedtitle, subt, plot in matches:
                 
-                if item.proxy:
-                    url = urllib.unquote(url.replace("/browse.php?u=", "").replace("&amp;b=4", ""))
-                elif not item.proxy:
+                url_p = urllib.unquote(scrapertools.find_single_match(url, 'php\?u=([^*&]+)'))
+                if not url_p:
                     url = host + url
-                url = url.replace(proxy, "")
+                else:
+                    url = url_p
+                
                 thumb = urllib.unquote(
                     thumb.replace("/browse.php?u=", "").replace("_wide.", "_full.").replace("&amp;b=4", ""))
                 
@@ -213,7 +215,7 @@ def episodios(item):
                 title_s = scrapertools.find_single_match(season, '\((.*?)\)')
 
                 count_title = '%sx%s %s' % (_season, episode, title_s)
-                if count_title in episodes_list:
+                if count_title in episodes_list_1:
                     _season += 1
                     
                 title = '%sx%s' %  (_season, episode)
@@ -223,7 +225,7 @@ def episodios(item):
                     title = "     %s" % (scrapedtitle)
                     
                 count_title = '%sx%s %s' % (_season, episode, title_s)
-                episodes_list.append(count_title)
+                episodes_list_1.append(count_title)
                 
                 if visto.strip() != "0":
                     title += " [COLOR %s][V][/COLOR]" % color5
@@ -242,11 +244,12 @@ def episodios(item):
         matches = scrapertools.find_multiple_matches(data, patron)
         matches.reverse()
         for url, thumb, media_id, visto, title, subt, plot in matches:
-            if item.proxy:
-                url = urllib.unquote(url.replace("/browse.php?u=", "").replace("&amp;b=4", ""))
-            elif not item.proxy:
+            url_p = urllib.unquote(scrapertools.find_single_match(url, 'php\?u=([^*&]+)'))
+            if not url_p:
                 url = host + url
-            url = url.replace(proxy, "")
+            else:
+                url = url_p
+            
             thumb = urllib.unquote(
                 thumb.replace("/browse.php?u=", "").replace("_wide.", "_full.").replace("&amp;b=4", ""))
             
@@ -273,6 +276,7 @@ def episodios(item):
     if config.get_videolibrary_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la videoteca", 
                              url=item.url, text_color=color1, action="add_serie_to_library",
+                             proxy=item.proxy,
                              extra="episodios",  contentSerieName=item.contentSerieName))
     return itemlist
 
@@ -324,17 +328,18 @@ def indices(item):
     if not item.url:
         itemlist.append(item.clone(title="Alfabético", url=host + "/videos/anime/alpha"))
         itemlist.append(item.clone(title="Géneros", url=host + "/videos/anime"))
-        itemlist.append(item.clone(title="Temporadas", url=host + "/videos/anime"))
+        if not item.proxy:
+            itemlist.append(item.clone(title="Temporadas", url=host + "/videos/anime/seasons"))
     else:
         data = get_source(item.url).data
         if "Alfabético" in item.title:
-            bloque = scrapertools.find_single_match(data, '<div class="content-menu cf ">(.*?)</div>')
+            bloque = scrapertools.find_single_match(data, '<div class="content-menu cf">(.*?)</div>')
             matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)".*?>([^<]+)<')
             for url, title in matches:
                 if "todo" in title:
                     continue
                 if item.proxy:
-                    url = proxy % host + url
+                    url = proxy_i + url.replace("&amp;b=4/", "")
                 else:
                     url = host + url
                 itemlist.append(item.clone(action="alpha", title=title, url=url, page=0))
@@ -344,8 +349,8 @@ def indices(item):
             matches = scrapertools.find_multiple_matches(bloque, 'href="#([^"]+)".*?title="([^"]+)"')
             for url, title in matches:
                 url += "/ajax_page?pg=0"
-                if item.proxy == "usa":
-                    url = proxy % host + url
+                if item.proxy:
+                    url = proxy_i + url.replace("&amp;b=4/", "")
                 else:
                     url = host + url
                 itemlist.append(item.clone(action="lista", title=title, url=url, page=0))
@@ -439,6 +444,9 @@ def get_source(url, post=None):
     if proxy_usa and not proxy_i in url:
         url = proxy % url
     data = httptools.downloadpage(url, post=post)
+    if 'div id="error">Hotlinking' in data.data:
+        httptools.downloadpage(proxy_i)
+        data = httptools.downloadpage(url, post=post)
     return data
 
 def play(item):

@@ -249,6 +249,14 @@ def refresh_screen(item):
 def post_tmdb_listado(item, itemlist):
     logger.info()
     itemlist_fo = []
+    try:
+        from channels import test
+        if test.TEST_ACTIVE:
+            test_active = True
+        else:
+            test_active = False
+    except:
+        test_active = False
     
     """
         
@@ -344,10 +352,12 @@ def post_tmdb_listado(item, itemlist):
             item_local.infoLabels['aired'] = ''
             
         #Si traía el TMDB-ID, pero no ha funcionado, lo reseteamos e intentamos de nuevo
+        if item_local.infoLabels['tmdb_id'] and test_active:            # Si se están pasando tests,
+            del item_local.infoLabels['tmdb_id']                        # ignorar el TMDB
         if item_local.infoLabels['tmdb_id'] and not item_local.infoLabels['originaltitle']:
             logger.error("*** TMDB-ID erroneo, reseteamos y reintentamos ***")
             logger.error(item_local)
-            del item_local.infoLabels['tmdb_id']                #puede traer un TMDB-ID erroneo
+            del item_local.infoLabels['tmdb_id']                        #puede traer un TMDB-ID erroneo
             try:
                 tmdb.set_infoLabels(item_local, __modo_grafico__, idioma_busqueda='es,en')  #pasamos otra vez por TMDB
             except:
@@ -635,7 +645,8 @@ def post_tmdb_seasons(item, itemlist, url='serie'):
     
     #Es un canal estándar, sólo una linea de Añadir a Videoteca
     title = ''
-    if item.infoLabels['status'] and item.infoLabels['status'].lower() == "ended":
+    if item.infoLabels['status'] and (item.infoLabels['status'].lower() == "ended" \
+                        or item.infoLabels['status'].lower() == "canceled"):
         title += ' [TERMINADA]'
     itemlist_temporadas.append(item_season.clone(title="[COLOR yellow]Añadir esta serie a videoteca-[/COLOR]" + title, action="add_serie_to_library", extra="episodios", add_menu=True))
 
@@ -1167,7 +1178,8 @@ def post_tmdb_findvideos(item, itemlist):
         
     if item.contentType == "episode" or item.contentType == "season":                   #Series o Temporadas
         title_gen += '%s [COLOR yellow][%s][/COLOR] [%s] [COLOR limegreen][%s][/COLOR] [COLOR red]%s[/COLOR] [%s]' % (item.contentSerieName, item.infoLabels['year'], rating, item.quality, str(item.language), scrapertools.find_single_match(item.title, '\s\[(\d+,?\d*?\s\w[b|B])\]'))                                      #Rating, Calidad, Idioma, Tamaño
-        if item.infoLabels['status'] and item.infoLabels['status'].lower() == "ended":
+        if item.infoLabels['status'] and (item.infoLabels['status'].lower() == "ended" \
+                        or item.infoLabels['status'].lower() == "canceled"):
             title_gen = '[TERM.] %s' % title_gen        #Marca cuando la Serie está terminada y no va a haber más producción
         item.title = title_gen
 
@@ -1307,7 +1319,15 @@ def find_rar_password(item):
 def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torrent=False, \
                         timeout=5, file_list=False, lookup=True, local_torr=None, headers={}, short_pad=False):
     logger.info()
-    from core import videolibrarytools
+    from servers import torrent
+    try:
+        from channels import test
+        if test.TEST_ACTIVE:
+            test_active = True
+        else:
+            test_active = False
+    except:
+        test_active = False
     
     """
     
@@ -1322,7 +1342,7 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
     Entrada: post:      contenido del post en caso de llamada con post
     Entrada: data_torrent:  Flag por si se quiere el contenido del .torretn de vuelta
     Salida: size:       str con el tamaño y tipo de medida ( MB, GB, etc)
-    Salida: torrent:    dict() con el contenido del .torrent (opcional)
+    Salida: torrent_f:  dict() con el contenido del .torrent (opcional)
     Salida: files:      dict() con los nombres de los archivos del torrent y su tamaño (opcional)
     
     """
@@ -1389,7 +1409,7 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
     
     #Móludo principal
     size = ''
-    torrent = ''
+    torrent_f = ''
     torrent_file = ''
     files = {}
     try:
@@ -1401,50 +1421,50 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
         #urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
         #urllib.urlretrieve(url, torrents_path + "/generictools.torrent")        #desacargamos el .torrent a la carpeta
         #torrent_file = open(torrents_path + "/generictools.torrent", "rb").read()   #leemos el .torrent
-        
-        if url and not local_torr:
-            torrents_path, torrent_file = videolibrarytools.caching_torrents(url, \
+
+        if ((url and not local_torr) or url.startswith('magnet')) and not test_active:
+            torrents_path, torrent_file = torrent.caching_torrents(url, \
                         referer=referer, post=post, torrents_path=torrents_path, \
                         timeout=timeout, lookup=lookup, data_torrent=True, headers=headers)
         elif local_torr:
             torrent_file = filetools.read(local_torr)
         if not torrent_file:
             if not lookup:
-                return (size, torrents_path, torrent, files)
+                return (size, torrents_path, torrent_f, files)
             elif file_list and data_torrent:
-                return (size, torrent, files)
+                return (size, torrent_f, files)
             elif file_list:
                 return (size, files)
             elif data_torrent:
-                return (size, torrent)
+                return (size, torrent_f)
             return size                                         #Si hay un error, devolvemos el "size" y "torrent" vacíos
 
-        torrent = decode(torrent_file)                                          #decodificamos el .torrent
+        torrent_f = decode(torrent_file)                                          #decodificamos el .torrent
 
         #si sólo tiene un archivo, tomamos la longitud y la convertimos a una unidad legible, si no dará error
         try:
-            sizet = torrent["info"]['length']
+            sizet = torrent_f["info"]['length']
             size = convert_size(sizet)
             
-            files = torrent["info"].copy()
+            files = torrent_f["info"].copy()
             if 'path' not in files: files.update({'path': ['']})
             if 'piece length' in files: del files['piece length']
             if 'pieces' in files: del files['pieces']
             if 'name' in files: del files['name']
             files = [files]
-            files.append({"__name": torrent["info"]["name"], 'length': 0})
+            files.append({"__name": torrent_f["info"]["name"], 'length': 0})
         except:
             pass
             
         #si tiene múltiples archivos sumamos la longitud de todos
         if not size:
             try:
-                check_video = scrapertools.find_multiple_matches(str(torrent["info"]["files"]), "'length': (\d+).*?}")
+                check_video = scrapertools.find_multiple_matches(str(torrent_f["info"]["files"]), "'length': (\d+).*?}")
                 sizet = sum([int(i) for i in check_video])
                 size = convert_size(sizet)
                 
-                files = torrent["info"]["files"][:]
-                files.append({"__name": torrent["info"]["name"], 'length': 0})
+                files = torrent_f["info"]["files"][:]
+                files.append({"__name": torrent_f["info"]["name"], 'length': 0})
                 
             except:
                 pass
@@ -1465,13 +1485,13 @@ def get_torrent_size(url, referer=None, post=None, torrents_path=None, data_torr
     logger.info(str(size))
     
     if not lookup:
-        return (size, torrents_path, torrent, files)
+        return (size, torrents_path, torrent_f, files)
     elif file_list and data_torrent:
-        return (size, torrent, files)
+        return (size, torrent_f, files)
     elif file_list:
         return (size, files)
     elif data_torrent:
-        return (size, torrent)
+        return (size, torrent_f)
     return size 
 
     
@@ -1733,10 +1753,10 @@ def fail_over_newpct1(item, patron, patron2=None, timeout=None):
                 else:
                     #Función especial para encontrar en otro clone un .torrent válido
                     if verify_torrent == 'torrent:check:status':
-                        from core import videolibrarytools
+                        from servers import torrent
                         if not data_alt.startswith("http"):                     #Si le falta el http.: lo ponemos
                             data_alt = scrapertools.find_single_match(item.channel_host, '(\w+:)//') + data_alt
-                        if videolibrarytools.verify_url_torrent(data_alt):      #verificamos si el .torrent existe
+                        if torrent.verify_url_torrent(data_alt):        #verificamos si el .torrent existe
                             item.url = url                                      #guardamos la url que funciona
                             break                                       #nos vamos, con la nueva url del .torrent verificada
                         data = ''

@@ -24,14 +24,11 @@
 '''
 
 import os, sys
-import xbmc, xbmcgui, xbmcvfs, xbmcaddon
+import xbmc, xbmcgui, xbmcaddon
 from net import HTTP
+from core import filetools                                                                                          ### Alfa
 
-if xbmc.getCondVisibility("system.platform.windows") and (sys.maxsize > 2 ** 32 and "x64" or "x86") == 'x64':       ### Alfa
-    #__libbaseurl__ = 'https://extra.alfa-addon.com/downloads/libtorrent'                                           ### Alfa
-    __libbaseurl__ = 'https://github.com/alfa-addon/alfa-repo/raw/master/downloads/libtorrent'                      ### Alfa
-else:                                                                                                               ### Alfa
-    __libbaseurl__ = "https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"
+__libbaseurl__ = "https://github.com/DiMartinoXBMC/script.module.libtorrent/raw/master/python_libtorrent"
 #__settings__ = xbmcaddon.Addon(id='script.module.libtorrent')
 #__version__ = __settings__.getAddonInfo('version')
 #__plugin__ = __settings__.getAddonInfo('name') + " v." + __version__
@@ -64,10 +61,19 @@ class LibraryManager():
         self.dest_path = dest_path
         self.platform = platform
         self.root=os.path.dirname(os.path.dirname(__file__))
+        ver1, ver2, ver3 = platform['version'].split('.')                       ### Alfa: resto método
+        try:
+            ver1 = int(ver1)
+            ver2 = int(ver2)
+        except:
+            pass
+        if ver1 >= 1 and ver2 >= 2:
+            global __libbaseurl__
+            __libbaseurl__ = 'https://github.com/alfa-addon/alfa-repo/raw/master/downloads/libtorrent'
 
     def check_exist(self):
         for libname in get_libname(self.platform):
-            if not xbmcvfs.exists(os.path.join(self.dest_path,libname)):
+            if not filetools.exists(os.path.join(self.dest_path,libname)):
                 return False
         return True
 
@@ -87,12 +93,12 @@ class LibraryManager():
         if self.check_update():
             for libname in get_libname(self.platform):
                 self.libpath = os.path.join(self.dest_path, libname)
-                xbmcvfs.delete(self.libpath)
+                filetools.remove(self.libpath)
             self.download()
 
     def download(self):
         __settings__ = xbmcaddon.Addon(id='plugin.video.alfa')                  ### Alfa
-        xbmcvfs.mkdirs(self.dest_path)
+        filetools.mkdir(self.dest_path)
         for libname in get_libname(self.platform):
             dest = os.path.join(self.dest_path, libname)
             log("try to fetch %s" % libname)
@@ -100,21 +106,21 @@ class LibraryManager():
             if libname!='liblibtorrent.so':
                 try:
                     self.http = HTTP()
-                    self.http.fetch(url, download=dest + ".zip", progress=True)
+                    self.http.fetch(url, download=dest + ".zip", progress=False)    ### Alfa
                     log("%s -> %s" % (url, dest))
                     xbmc.executebuiltin('XBMC.Extract("%s.zip","%s")' % (dest, self.dest_path), True)
-                    xbmcvfs.delete(dest + ".zip")
+                    filetools.remove(dest + ".zip")
                 except:
                     text = 'Failed download %s!' % libname
                     xbmc.executebuiltin("XBMC.Notification(%s,%s,%s,%s)" % (__plugin__,text,750,__icon__))
             else:
-                xbmcvfs.copy(os.path.join(self.dest_path, 'libtorrent.so'), dest)
+                filetools.copy(os.path.join(self.dest_path, 'libtorrent.so'), dest, silent=True)      ### Alfa
             dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Path')), \
                             'lib', libname)                                     ### Alfa
-            xbmcvfs.copy(dest, dest_alfa)                                       ### Alfa
+            filetools.copy(dest, dest_alfa, silent=True)                        ### Alfa
             dest_alfa = os.path.join(xbmc.translatePath(__settings__.getAddonInfo('Profile')), \
                             'custom_code', 'lib', libname)                      ### Alfa
-            xbmcvfs.copy(dest, dest_alfa)                                       ### Alfa
+            filetools.copy(dest, dest_alfa, silent=True)                        ### Alfa
         return True
 
     def android_workaround(self, new_dest_path):                                ### Alfa (entera)
@@ -125,13 +131,11 @@ class LibraryManager():
             size=str(os.path.getsize(libpath))
             new_libpath=os.path.join(new_dest_path, libname)
 
-            if xbmcvfs.exists(new_libpath):
+            if filetools.exists(new_libpath):
                 new_size=str(os.path.getsize(new_libpath))
-                if size!=new_size or size==new_size:
-                    xbmcvfs.delete(new_libpath)
-                    
-                    if xbmcvfs.exists(new_libpath):
-                        
+                if size != new_size:
+                    filetools.remove(new_libpath)
+                    if filetools.exists(new_libpath):
                         try:
                             command = ['su', '-c', 'rm', '%s' % new_libpath]
                             p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -140,35 +144,36 @@ class LibraryManager():
                         except:
                             log('Sin PERMISOS ROOT: %s' % str(command))
                     
-                    if not xbmcvfs.exists(new_libpath):
+                    if not filetools.exists(new_libpath):
                         log('Deleted: (%s) %s -> (%s) %s' %(size, libpath, new_size, new_libpath))
                     
-            if not xbmcvfs.exists(new_libpath):
-                xbmcvfs.copy(libpath, new_libpath)
+            if not filetools.exists(new_libpath):
+                filetools.copy(libpath, new_libpath, silent=True)                 ### ALFA
                 log('Copying... %s -> %s' %(libpath, new_libpath))
                 
-                if not xbmcvfs.exists(new_libpath):
-
+                if not filetools.exists(new_libpath):
                     try:
                         command = ['su', '-c', 'cp', '%s' % libpath, '%s' % new_libpath]
                         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                         output_cmd, error_cmd = p.communicate()
                         log('Comando ROOT: %s' % str(command))
                         
-                        command = ['su', '-c', 'chmod', '775', '%s' % new_libpath]
+                        command = ['su', '-c', 'chmod', '777', '%s' % new_libpath]
                         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                         output_cmd, error_cmd = p.communicate()
                         log('Comando ROOT: %s' % str(command))
                     except:
                         log('Sin PERMISOS ROOT: %s' % str(command))
 
-                    if not xbmcvfs.exists(new_libpath):
-                        log('Failed!')
+                    if not filetools.exists(new_libpath):
+                        log('ROOT Copy Failed!')
                 
                 else:
-                    command = ['chmod', '775', '%s' % new_libpath]
+                    command = ['chmod', '777', '%s' % new_libpath]
                     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     output_cmd, error_cmd = p.communicate()
                     log('Comando: %s' % str(command))
+            else:
+                log('Module exists.  Not copied... %s' % new_libpath)           ### ALFA
 
         return new_dest_path

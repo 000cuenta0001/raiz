@@ -419,6 +419,7 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
     tags = []
     if config.get_setting("enable_filter", "videolibrary"):
         tags = [x.strip() for x in config.get_setting("filters", "videolibrary").lower().split(",")]
+
     for e in episodelist:
         headers = {}
         if e.headers:
@@ -476,7 +477,10 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
         return 0, 0, 0
 
     # fix float porque la division se hace mal en python 2.x
-    t = float(100) / len(new_episodelist)
+    try:
+        t = float(100) / len(new_episodelist)
+    except:
+        t = 0
 
     last_season_episode = ''
     for i, e in enumerate(scraper.sort_episode_list(new_episodelist)):
@@ -574,7 +578,7 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
     if not silent:
         p_dialog.close()
 
-    if news_in_playcounts or emergency_urls_succ or serie.infoLabels["status"] == "Ended":
+    if news_in_playcounts or emergency_urls_succ or serie.infoLabels["status"] == "Ended" or serie.infoLabels["status"] == "Canceled":
         # Si hay nuevos episodios los marcamos como no vistos en tvshow.nfo ...
         tvshow_path = filetools.join(path, "tvshow.nfo")
         try:
@@ -591,9 +595,9 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
                         tvshow_item.emergency_urls = dict()
                     if tvshow_item.library_urls.get(serie.channel, False):
                         tvshow_item.emergency_urls.update({serie.channel: True})
-                elif emergency_urls_stat == 2:                                          #Operación de Borrar enlaces
+                elif emergency_urls_stat == 2:                                  #Operación de Borrar enlaces
                     if tvshow_item.emergency_urls and tvshow_item.emergency_urls.get(serie.channel, False):
-                        tvshow_item.emergency_urls.pop(serie.channel, None)             #borramos la entrada del .nfo
+                        tvshow_item.emergency_urls.pop(serie.channel, None)     #borramos la entrada del .nfo
                         
             if tvshow_item.active == 30:
                 tvshow_item.active = 1
@@ -606,10 +610,12 @@ def save_episodes(path, episodelist, serie, silent=False, overwrite=True):
                             tvshow_item.infoLabels["temporada_num_episodios"])
             elif last_season_episode:
                 last_epi = last_season_episode
-            if tvshow_item.infoLabels["status"] == "Ended" and insertados == 0 \
-                            and fallidos == 0 and \
-                            last_epi in tvshow_item.library_playcounts:         # Si la serie ha terminado...
+            if (tvshow_item.infoLabels["status"] == "Ended" or tvshow_item.infoLabels["status"] == "Canceled") \
+                            and insertados == 0 and fallidos == 0 \
+                            and last_epi in tvshow_item.library_playcounts:     # Si la serie ha terminado...
                 tvshow_item.active = 0                                          # ... no la actualizaremos más
+                logger.debug("%s [%s]: serie 'Terminada' o 'Cancelada'.  Se desactiva la actualización periódica" %
+                 (serie.contentSerieName, serie.channel))
             
             update_last = datetime.date.today()
             tvshow_item.update_last = update_last.strftime('%Y-%m-%d')
@@ -735,6 +741,8 @@ def add_tvshow(item, channel=None):
         # Obtiene el listado de episodios
         itemlist = getattr(channel, item.action)(item)
         
+    global magnet_caching
+    magnet_caching = False
     insertados, sobreescritos, fallidos, path = save_tvshow(item, itemlist)
 
     if not insertados and not sobreescritos and not fallidos:
@@ -771,6 +779,12 @@ def add_tvshow(item, channel=None):
 def emergency_urls(item, channel=None, path=None, headers={}):
     logger.info()
     import re
+    from servers import torrent
+    try:
+        magnet_caching_e = magnet_caching
+    except:
+        magnet_caching_e = True
+    
     """ 
     Llamamos a Findvideos del canal con la variable "item.videolibray_emergency_urls = True" para obtener la variable
     "item.emergency_urls" con la lista de listas de tuplas de los enlaces torrent y de servidores directos para ese episodio o película
@@ -827,7 +841,9 @@ def emergency_urls(item, channel=None, path=None, headers={}):
                 if item_res.post: post = item_res.post
                 for url in item_res.emergency_urls[0]:                      #Recorremos las urls de emergencia...
                     torrents_path = re.sub(r'(?:\.\w+$)', '_%s.torrent' % str(i).zfill(2), path)
-                    path_real = caching_torrents(url, referer, post, torrents_path=torrents_path, headers=headers)  #...  para descargar los .torrents
+                    path_real = ''
+                    if magnet_caching_e or not url.startswith('magnet'):
+                        path_real = torrent.caching_torrents(url, referer, post, torrents_path=torrents_path, headers=headers)  #...  para descargar los .torrents
                     if path_real:                                           #Si ha tenido éxito...
                         item_res.emergency_urls[0][i-1] = path_real.replace(videolibrary_path, '')  #se guarda el "path" relativo
                     i += 1
@@ -850,143 +866,3 @@ def emergency_urls(item, channel=None, path=None, headers={}):
 
     #logger.debug(item_res.emergency_urls)
     return item_res                                             #Devolvemos el Item actualizado con los enlaces de emergencia
-    
-    
-def caching_torrents(url, referer=None, post=None, torrents_path=None, timeout=10, lookup=False, data_torrent=False, headers={}):
-    if torrents_path != None:
-        logger.info("path = " + torrents_path)
-    else:
-        logger.info()
-    if referer and post:
-        logger.info('REFERER: ' + referer)
-    import urllib
-    import re
-    from core import httptools
-    torrent_file = ''
-    if referer:
-        headers.update({'Content-Type': 'application/x-www-form-urlencoded', 'Referer': referer})   #Necesario para el Post del .Torrent
-    
-    """
-    Descarga en el path recibido el .torrent de la url recibida, y pasa el decode
-    Devuelve el path real del .torrent, o el path vacío si la operación no ha tenido éxito
-    """
-    
-    videolibrary_path = config.get_videolibrary_path()                  #Calculamos el path absoluto a partir de la Videoteca
-    if torrents_path == None:
-        if not videolibrary_path:
-            torrents_path = ''
-            if data_torrent:
-                return (torrents_path, torrent_file)
-            return torrents_path                                        #Si hay un error, devolvemos el "path" vacío
-        torrents_path = filetools.join(videolibrary_path, 'temp_torrents_Alfa', 'cliente_torrent_Alfa.torrent')    #path de descarga temporal
-    if '.torrent' not in torrents_path:
-        torrents_path += '.torrent'                                     #path para dejar el .torrent
-    #torrents_path_encode = filetools.encode(torrents_path)              #encode utf-8 del path
-    torrents_path_encode = torrents_path
-    
-    if url.endswith(".rar") or url.startswith("magnet:"):               #No es un archivo .torrent
-        logger.error('No es un archivo Torrent: ' + url)
-        torrents_path = ''
-        if data_torrent:
-            return (torrents_path, torrent_file)
-        return torrents_path                                            #Si hay un error, devolvemos el "path" vacío
-    
-    try:
-        #Descargamos el .torrent
-        if post:                                                        #Descarga con POST
-            response = httptools.downloadpage(url, headers=headers, post=post, follow_redirects=False, timeout=timeout)
-        else:                                                           #Descarga sin post
-            response = httptools.downloadpage(url, headers=headers, timeout=timeout)
-        if not response.sucess:
-            logger.error('Archivo .torrent no encontrado: ' + url)
-            torrents_path = ''
-            if data_torrent:
-                return (torrents_path, torrent_file)
-            return torrents_path                                        #Si hay un error, devolvemos el "path" vacío
-        torrent_file = response.data
-
-        if "used CloudFlare" in torrent_file:                           #Si tiene CloudFlare, usamos este proceso
-            response = httptools.downloadpage("http://anonymouse.org/cgi-bin/anon-www.cgi/" + url.strip(), timeout=timeout)
-            if not response.sucess:
-                logger.error('Archivo .torrent no encontrado: ' + url)
-                torrents_path = ''
-                if data_torrent:
-                    return (torrents_path, torrent_file)
-                return torrents_path                                    #Si hay un error, devolvemos el "path" vacío
-            torrent_file = response.data
-        
-        #Si es un archivo .ZIP tratamos de extraer el contenido
-        if torrent_file.startswith("PK"):
-            logger.info('Es un archivo .ZIP: ' + url)
-            
-            torrents_path_zip = filetools.join(videolibrary_path, 'temp_torrents_zip')  #Carpeta de trabajo
-            torrents_path_zip = filetools.encode(torrents_path_zip)
-            torrents_path_zip_file = filetools.join(torrents_path_zip, 'temp_torrents_zip.zip')     #Nombre del .zip
-            
-            import time
-            filetools.rmdirtree(torrents_path_zip)                      #Borramos la carpeta temporal
-            time.sleep(1)                                               #Hay que esperar, porque si no da error
-            filetools.mkdir(torrents_path_zip)                          #La creamos de nuevo
-            
-            if filetools.write(torrents_path_zip_file, torrent_file):   #Salvamos el .zip
-                torrent_file = ''                                       #Borramos el contenido en memoria
-                try:                                                    #Extraemos el .zip
-                    from core import ziptools
-                    unzipper = ziptools.ziptools()
-                    unzipper.extract(torrents_path_zip_file, torrents_path_zip)
-                except:
-                    import xbmc
-                    xbmc.executebuiltin('XBMC.Extract("%s", "%s")' % (torrents_path_zip_file, torrents_path_zip))
-                    time.sleep(1)
-                
-                for root, folders, files in filetools.walk(torrents_path_zip):      #Recorremos la carpeta para leer el .torrent
-                    for file in files:
-                        if file.endswith(".torrent"):
-                            input_file = filetools.join(root, file)                 #nombre del .torrent
-                            torrent_file = filetools.read(input_file)               #leemos el .torrent
-
-            filetools.rmdirtree(torrents_path_zip)                                  #Borramos la carpeta temporal
-
-        #Si no es un archivo .torrent (RAR, HTML,..., vacío) damos error
-        if not scrapertools.find_single_match(torrent_file, '^d\d+:.*?\d+:'):
-            logger.error('No es un archivo Torrent: ' + url)
-            torrents_path = ''
-            if data_torrent:
-                return (torrents_path, torrent_file)
-            return torrents_path                                            #Si hay un error, devolvemos el "path" vacío
-        
-        #Salvamos el .torrent
-        if not lookup:
-            if not filetools.write(torrents_path_encode, torrent_file):
-                logger.error('ERROR: Archivo .torrent no escrito: ' + torrents_path_encode)
-                torrents_path = ''                                          #Si hay un error, devolvemos el "path" vacío
-                torrent_file = ''                                           #... y el buffer del .torrent
-                if data_torrent:
-                    return (torrents_path, torrent_file)
-                return torrents_path
-    except:
-        torrents_path = ''                                                  #Si hay un error, devolvemos el "path" vacío
-        torrent_file = ''                                                   #... y el buffer del .torrent
-        logger.error('Error en el proceso de descarga del .torrent: ' + url + ' / ' + torrents_path_encode)
-        logger.error(traceback.format_exc())
-    
-    #logger.debug(torrents_path)
-    if data_torrent:
-        return (torrents_path, torrent_file)
-    return torrents_path
-    
-    
-def verify_url_torrent(url, timeout=5):
-    """
-    Verifica si el archivo .torrent al que apunta la url está disponible, descargándolo en un area temporal
-    Entrada:    url
-    Salida:     True o False dependiendo del resultado de la operación
-    """
-
-    if not url or url == 'javascript:;':                                            #Si la url viene vacía...
-        return False                                                                #... volvemos con error
-    torrents_path = caching_torrents(url, timeout=timeout, lookup=True)             #Descargamos el .torrent
-    if torrents_path:                                                               #Si ha tenido éxito...
-        return True
-    else:
-        return False
